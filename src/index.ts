@@ -1,10 +1,10 @@
 import { registerPlugin } from '@capacitor/core';
 
-import type { CapacitorWifiConnectPluginPlugin } from './definitions';
+import type { CapacitorWifiConnectPlugin } from './definitions';
 
-const CapacitorWifiConnectPlugin =
-  registerPlugin<CapacitorWifiConnectPluginPlugin>(
-    'CapacitorWifiConnectPlugin',
+const CapacitorWifiConnect =
+  registerPlugin<CapacitorWifiConnectPlugin>(
+    'CapacitorWifiConnect',
     {
       web: () =>
         import('./web').then(m => new m.CapacitorWifiConnectPluginWeb()),
@@ -12,4 +12,4 @@ const CapacitorWifiConnectPlugin =
   );
 
 export * from './definitions';
-export { CapacitorWifiConnectPlugin };
+export { CapacitorWifiConnect };

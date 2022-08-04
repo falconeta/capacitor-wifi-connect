@@ -1,11 +1,22 @@
 package com.falconeta.capacitor_wifi_connect;
 
-import android.util.Log;
+import com.getcapacitor.JSObject;
+import com.getcapacitor.Plugin;
+import com.getcapacitor.PluginCall;
+import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.CapacitorPlugin;
 
-public class CapacitorWifiConnectPlugin {
+@CapacitorPlugin(name = "CapacitorWifiConnect")
+public class CapacitorWifiConnectPlugin extends Plugin {
 
-    public String echo(String value) {
-        Log.i("Echo", value);
-        return value;
+    private CapacitorWifiConnect implementation = new CapacitorWifiConnect();
+
+    @PluginMethod
+    public void echo(PluginCall call) {
+        String value = call.getString("value");
+
+        JSObject ret = new JSObject();
+        ret.put("value", implementation.echo(value));
+        call.resolve(ret);
     }
 }
