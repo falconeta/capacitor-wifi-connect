@@ -6,8 +6,42 @@ export class CapacitorWifiConnectPluginWeb
   extends WebPlugin
   implements CapacitorWifiConnectPlugin
 {
-  async echo(options: { value: string }): Promise<{ value: string }> {
-    console.log('ECHO', options);
-    return options;
+  disconnect(): Promise<{ value: boolean }> {
+    throw new Error('Method not implemented.');
+  }
+  getSSID(): Promise<{ value: string }> {
+    throw new Error('Method not implemented.');
+  }
+  connect(options: {
+    ssid: string;
+    saveNetwork?: boolean | undefined;
+  }): Promise<{ value: number }> {
+    options;
+    throw new Error('Method not implemented.');
+  }
+  prefixConnect(options: {
+    ssid: string;
+    saveNetwork?: boolean | undefined;
+  }): Promise<{ value: number }> {
+    options;
+    throw new Error('Method not implemented.');
+  }
+  secureConnect(options: {
+    ssid: string;
+    password: string;
+    saveNetwork?: boolean | undefined;
+    isWep?: boolean | undefined;
+  }): Promise<{ value: number }> {
+    options;
+    throw new Error('Method not implemented.');
+  }
+  securePrefixConnect(options: {
+    ssid: string;
+    password: string;
+    saveNetwork?: boolean | undefined;
+    isWep?: boolean | undefined;
+  }): Promise<{ value: number }> {
+    options;
+    throw new Error('Method not implemented.');
   }
 }

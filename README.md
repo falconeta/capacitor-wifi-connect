@@ -13,24 +13,96 @@ npx cap sync
 
 <docgen-index>
 
-* [`echo(...)`](#echo)
+* [`disconnect()`](#disconnect)
+* [`getSSID()`](#getssid)
+* [`connect(...)`](#connect)
+* [`prefixConnect(...)`](#prefixconnect)
+* [`secureConnect(...)`](#secureconnect)
+* [`securePrefixConnect(...)`](#secureprefixconnect)
 
 </docgen-index>
 
 <docgen-api>
 <!--Update the source file JSDoc comments and rerun docgen to update the docs below-->
 
-### echo(...)
+### disconnect()
 
 ```typescript
-echo(options: { value: string; }) => Promise<{ value: string; }>
+disconnect() => Promise<{ value: boolean; }>
 ```
 
-| Param         | Type                            |
-| ------------- | ------------------------------- |
-| **`options`** | <code>{ value: string; }</code> |
+**Returns:** <code>Promise&lt;{ value: boolean; }&gt;</code>
+
+--------------------
+
+
+### getSSID()
+
+```typescript
+getSSID() => Promise<{ value: string; }>
+```
 
 **Returns:** <code>Promise&lt;{ value: string; }&gt;</code>
+
+--------------------
+
+
+### connect(...)
+
+```typescript
+connect(options: { ssid: string; saveNetwork?: boolean; }) => Promise<{ value: number; }>
+```
+
+| Param         | Type                                                  |
+| ------------- | ----------------------------------------------------- |
+| **`options`** | <code>{ ssid: string; saveNetwork?: boolean; }</code> |
+
+**Returns:** <code>Promise&lt;{ value: number; }&gt;</code>
+
+--------------------
+
+
+### prefixConnect(...)
+
+```typescript
+prefixConnect(options: { ssid: string; saveNetwork?: boolean; }) => Promise<{ value: number; }>
+```
+
+| Param         | Type                                                  |
+| ------------- | ----------------------------------------------------- |
+| **`options`** | <code>{ ssid: string; saveNetwork?: boolean; }</code> |
+
+**Returns:** <code>Promise&lt;{ value: number; }&gt;</code>
+
+--------------------
+
+
+### secureConnect(...)
+
+```typescript
+secureConnect(options: { ssid: string; password: string; saveNetwork?: boolean; isWep?: boolean; }) => Promise<{ value: number; }>
+```
+
+| Param         | Type                                                                                     |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| **`options`** | <code>{ ssid: string; password: string; saveNetwork?: boolean; isWep?: boolean; }</code> |
+
+**Returns:** <code>Promise&lt;{ value: number; }&gt;</code>
+
+--------------------
+
+
+### securePrefixConnect(...)
+
+```typescript
+securePrefixConnect(options: { ssid: string; password: string; saveNetwork?: boolean; isWep?: boolean; }) => Promise<{ value: number; }>
+```
+
+| Param         | Type                                                                                     |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| **`options`** | <code>{ ssid: string; password: string; saveNetwork?: boolean; isWep?: boolean; }</code> |
+
+**Returns:** <code>Promise&lt;{ value: number; }&gt;</code>
 
 --------------------
 
