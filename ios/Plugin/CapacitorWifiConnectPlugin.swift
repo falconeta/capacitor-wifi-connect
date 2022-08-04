@@ -25,9 +25,7 @@ public class CapacitorWifiConnectPlugin: CAPPlugin {
         let ssid = call.getString("ssid");
         let saveNetwork = call.getBool("saveNetwork") ?? false;
         if(ssid != nil) {
-            call.resolve([
-                "value": implementation.connect(ssid: ssid!, saveNetwork: saveNetwork)
-            ])
+            implementation.connect(ssid: ssid!, saveNetwork: saveNetwork, resolve: call.resolve);
         } else {
             call.reject("SSID is mandatory")
         }
@@ -37,9 +35,8 @@ public class CapacitorWifiConnectPlugin: CAPPlugin {
         let ssid = call.getString("ssid");
         let saveNetwork =  call.getBool("saveNetwork") ?? false;
         if(ssid != nil) {
-            call.resolve([
-                "value": implementation.prefixConnect(ssid: ssid!, saveNetwork: saveNetwork)
-            ])
+
+            implementation.prefixConnect(ssid: ssid!, saveNetwork: saveNetwork, resolve: call.resolve);
         } else {
             call.reject("SSID is mandatory")
         }
@@ -51,9 +48,7 @@ public class CapacitorWifiConnectPlugin: CAPPlugin {
         let saveNetwork = call.getBool("saveNetwork") ?? false;
         let isWep = call.getBool("isWep") ?? false;
         if(ssid != nil && password != nil) {
-            call.resolve([
-                "value": implementation.secureConnect(ssid: ssid!, password: password!, saveNetwork: saveNetwork, isWep: isWep)
-            ])
+            implementation.secureConnect(ssid: ssid!, password: password!, saveNetwork: saveNetwork, isWep: isWep, resolve: call.resolve);
         } else {
             call.reject("SSID and password are mandatory")
         }
@@ -65,9 +60,8 @@ public class CapacitorWifiConnectPlugin: CAPPlugin {
         let saveNetwork = call.getBool("saveNetwork") ?? false;
         let isWep = call.getBool("isWep") ?? false;
         if(ssid != nil && password != nil) {
-            call.resolve([
-                "value": implementation.securePrefixConnect(ssid:ssid!, password:password!, saveNetwork:saveNetwork, isWep: isWep)
-            ])
+
+            implementation.securePrefixConnect(ssid:ssid!, password:password!, saveNetwork:saveNetwork, isWep: isWep, resolve: call.resolve);
         } else {
             call.reject("SSID and password are mandatory")
         }
