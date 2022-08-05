@@ -41,6 +41,7 @@ For functionality, you need to note the following:
 * [`prefixConnect(...)`](#prefixconnect)
 * [`secureConnect(...)`](#secureconnect)
 * [`securePrefixConnect(...)`](#secureprefixconnect)
+* [Enums](#enums)
 
 </docgen-index>
 
@@ -72,14 +73,14 @@ getSSID() => Promise<{ value: string; }>
 ### connect(...)
 
 ```typescript
-connect(options: { ssid: string; saveNetwork?: boolean; }) => Promise<{ value: number; }>
+connect(options: { ssid: string; saveNetwork?: boolean; }) => Promise<{ value: ConnectState; }>
 ```
 
 | Param         | Type                                                  |
 | ------------- | ----------------------------------------------------- |
 | **`options`** | <code>{ ssid: string; saveNetwork?: boolean; }</code> |
 
-**Returns:** <code>Promise&lt;{ value: number; }&gt;</code>
+**Returns:** <code>Promise&lt;{ value: <a href="#connectstate">ConnectState</a>; }&gt;</code>
 
 --------------------
 
@@ -87,14 +88,14 @@ connect(options: { ssid: string; saveNetwork?: boolean; }) => Promise<{ value: n
 ### prefixConnect(...)
 
 ```typescript
-prefixConnect(options: { ssid: string; saveNetwork?: boolean; }) => Promise<{ value: number; }>
+prefixConnect(options: { ssid: string; saveNetwork?: boolean; }) => Promise<{ value: ConnectState; }>
 ```
 
 | Param         | Type                                                  |
 | ------------- | ----------------------------------------------------- |
 | **`options`** | <code>{ ssid: string; saveNetwork?: boolean; }</code> |
 
-**Returns:** <code>Promise&lt;{ value: number; }&gt;</code>
+**Returns:** <code>Promise&lt;{ value: <a href="#connectstate">ConnectState</a>; }&gt;</code>
 
 --------------------
 
@@ -102,14 +103,14 @@ prefixConnect(options: { ssid: string; saveNetwork?: boolean; }) => Promise<{ va
 ### secureConnect(...)
 
 ```typescript
-secureConnect(options: { ssid: string; password: string; saveNetwork?: boolean; isWep?: boolean; }) => Promise<{ value: number; }>
+secureConnect(options: { ssid: string; password: string; saveNetwork?: boolean; isWep?: boolean; }) => Promise<{ value: ConnectState; }>
 ```
 
 | Param         | Type                                                                                     |
 | ------------- | ---------------------------------------------------------------------------------------- |
 | **`options`** | <code>{ ssid: string; password: string; saveNetwork?: boolean; isWep?: boolean; }</code> |
 
-**Returns:** <code>Promise&lt;{ value: number; }&gt;</code>
+**Returns:** <code>Promise&lt;{ value: <a href="#connectstate">ConnectState</a>; }&gt;</code>
 
 --------------------
 
@@ -117,15 +118,28 @@ secureConnect(options: { ssid: string; password: string; saveNetwork?: boolean; 
 ### securePrefixConnect(...)
 
 ```typescript
-securePrefixConnect(options: { ssid: string; password: string; saveNetwork?: boolean; isWep?: boolean; }) => Promise<{ value: number; }>
+securePrefixConnect(options: { ssid: string; password: string; saveNetwork?: boolean; isWep?: boolean; }) => Promise<{ value: ConnectState; }>
 ```
 
 | Param         | Type                                                                                     |
 | ------------- | ---------------------------------------------------------------------------------------- |
 | **`options`** | <code>{ ssid: string; password: string; saveNetwork?: boolean; isWep?: boolean; }</code> |
 
-**Returns:** <code>Promise&lt;{ value: number; }&gt;</code>
+**Returns:** <code>Promise&lt;{ value: <a href="#connectstate">ConnectState</a>; }&gt;</code>
 
 --------------------
+
+
+### Enums
+
+
+#### ConnectState
+
+| Members          | Value           |
+| ---------------- | --------------- |
+| **`Ok`**         | <code>0</code>  |
+| **`Denied`**     | <code>-1</code> |
+| **`Ko`**         | <code>-2</code> |
+| **`UnknowSsid`** | <code>-3</code> |
 
 </docgen-api>
