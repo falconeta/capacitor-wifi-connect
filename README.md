@@ -9,6 +9,17 @@ npm install @falconeta/capacitor-wifi-connect
 npx cap sync
 ```
 
+iOS Functions
+For functionality, you need to note the following:
+
+* Connect/Disconnect only works for iOS11+
+
+* prefixConnect/securePrefixConnect only works for iOS13+
+
+* Can't run in the simulator so you need to attach an actual device when building with xCode
+
+* Will ensure 'HotspotConfiguration' and 'Wifi Information' capabilities are added to your xCode project
+
 ## API
 
 <docgen-index>
