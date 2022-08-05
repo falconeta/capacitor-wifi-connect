@@ -9,7 +9,7 @@ npm install @falconeta/capacitor-wifi-connect
 npx cap sync
 ```
 
-iOS Functions
+# iOS Functions
 For functionality, you need to note the following:
 
 * Connect/Disconnect only works for iOS11+
@@ -19,6 +19,17 @@ For functionality, you need to note the following:
 * Can't run in the simulator so you need to attach an actual device when building with xCode
 
 * Will ensure 'HotspotConfiguration' and 'Wifi Information' capabilities are added to your xCode project
+
+# Android Functions
+
+* ensure that the following permissions is configured in AndroidManifest.xml:
+`
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+`
 
 ## API
 

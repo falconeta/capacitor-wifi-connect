@@ -49,70 +49,73 @@ class CapacitorWifiConnectPlugin : Plugin() {
 
   @PluginMethod
   fun disconnect(call: PluginCall) {
+    if (!isPermissionGranted()) {
+      checkPermission(call, "disconnectCallback");
+      return;
+    }
     val ret = JSObject()
     implementation.disconnect(call)
   }
 
+  @PermissionCallback
+  private fun disconnectCallback(call: PluginCall) {
+    if (isPermissionGranted()) {
+      disconnect(call);
+    } else {
+      call.reject("Permission is required")
+    }
+  }
+
   @PluginMethod
   fun getSSID(call: PluginCall) {
+    if (!isPermissionGranted()) {
+      checkPermission(call, "getSSIDCallback");
+      return;
+    }
     val ret = JSObject()
     ret.put("value", implementation.getSSID())
     call.resolve(ret)
   }
 
+  @PermissionCallback
+  private fun getSSIDCallback(call: PluginCall) {
+    if (isPermissionGranted()) {
+      getSSID(call);
+    } else {
+      call.reject("Permission is required")
+    }
+  }
+
   @PluginMethod
   fun connect(call: PluginCall) {
+    if (!isPermissionGranted()) {
+      checkPermission(call, "connectPermsCallback");
+      return;
+    }
     val ssid = call.getString("ssid")
 
     if (ssid != null) {
-      implementation.connect(ssid!!, call);
+      implementation.connect(ssid, call);
     } else {
       call.reject("SSID is mandatory")
     }
   }
 
+  @PermissionCallback
+  private fun connectPermsCallback(call: PluginCall) {
+    if (isPermissionGranted()) {
+      connect(call);
+    } else {
+      call.reject("Permission is required")
+    }
+  }
+
   @PluginMethod
   fun prefixConnect(call: PluginCall) {
-    if (getPermissionState(PERMISSION_ACCESS_FINE_LOCATION) != PermissionState.GRANTED) {
-      return requestPermissionForAlias(
-        PERMISSION_ACCESS_FINE_LOCATION,
-        call,
-        "prefixConnectPermsCallback"
-      );
+    if (!isPermissionGranted()) {
+      checkPermission(call, "prefixConnectPermsCallback");
+      return;
     }
-
-    if (getPermissionState(PERMISSION_ACCESS_COARSE_LOCATION) != PermissionState.GRANTED) {
-      return requestPermissionForAlias(
-        PERMISSION_ACCESS_COARSE_LOCATION,
-        call,
-        "prefixConnectPermsCallback"
-      );
-    }
-
-    if (getPermissionState(PERMISSION_ACCESS_WIFI_STATE) != PermissionState.GRANTED) {
-      return requestPermissionForAlias(
-        PERMISSION_ACCESS_WIFI_STATE,
-        call,
-        "prefixConnectPermsCallback"
-      );
-    }
-
-    if (getPermissionState(PERMISSION_CHANGE_WIFI_STATE) != PermissionState.GRANTED) {
-      return requestPermissionForAlias(
-        PERMISSION_CHANGE_WIFI_STATE,
-        call,
-        "prefixConnectPermsCallback"
-      );
-    }
-
-    if (getPermissionState(PERMISSION_CHANGE_NETWORK_STATE) != PermissionState.GRANTED) {
-      return requestPermissionForAlias(
-        PERMISSION_CHANGE_NETWORK_STATE,
-        call,
-        "prefixConnectPermsCallback"
-      );
-    }
-
     val ssid = call.getString("ssid")
     if (ssid != null) {
       implementation.prefixConnect(ssid!!, call);
@@ -123,13 +126,7 @@ class CapacitorWifiConnectPlugin : Plugin() {
 
   @PermissionCallback
   private fun prefixConnectPermsCallback(call: PluginCall) {
-    if (
-      getPermissionState(PERMISSION_ACCESS_FINE_LOCATION) == PermissionState.GRANTED &&
-      getPermissionState(PERMISSION_ACCESS_COARSE_LOCATION) == PermissionState.GRANTED &&
-      getPermissionState(PERMISSION_ACCESS_WIFI_STATE) == PermissionState.GRANTED &&
-      getPermissionState(PERMISSION_CHANGE_WIFI_STATE) == PermissionState.GRANTED &&
-      getPermissionState(PERMISSION_CHANGE_NETWORK_STATE) == PermissionState.GRANTED
-    ) {
+    if (isPermissionGranted()) {
       prefixConnect(call);
     } else {
       call.reject("Permission is required")
@@ -138,6 +135,10 @@ class CapacitorWifiConnectPlugin : Plugin() {
 
   @PluginMethod
   fun secureConnect(call: PluginCall) {
+    if (!isPermissionGranted()) {
+      checkPermission(call, "secureConnectPermsCallback");
+      return;
+    }
     val ssid = call.getString("ssid")
     val password = call.getString("password")
     val isWep = call.getBoolean("isWep") ?: false;
@@ -148,7 +149,20 @@ class CapacitorWifiConnectPlugin : Plugin() {
     }
   }
 
+  @PermissionCallback
+  private fun secureConnectPermsCallback(call: PluginCall) {
+    if (isPermissionGranted()) {
+      secureConnect(call);
+    } else {
+      call.reject("Permission is required")
+    }
+  }
+
   fun securePrefixConnect(call: PluginCall) {
+    if (!isPermissionGranted()) {
+      checkPermission(call, "securePrefixConnectPermsCallback");
+      return;
+    }
     val ssid = call.getString("ssid")
     val password = call.getString("password")
     val isWep = call.getBoolean("isWep") ?: false;
@@ -158,4 +172,66 @@ class CapacitorWifiConnectPlugin : Plugin() {
       call.reject("SSID and password are mandatory")
     }
   }
+
+  @PermissionCallback
+  private fun securePrefixConnectPermsCallback(call: PluginCall) {
+    if (isPermissionGranted()) {
+      securePrefixConnect(call);
+    } else {
+      call.reject("Permission is required")
+    }
+  }
+
+
+  private fun checkPermission(call: PluginCall, callbackName: String) {
+    if (getPermissionState(PERMISSION_ACCESS_FINE_LOCATION) != PermissionState.GRANTED) {
+      return requestPermissionForAlias(
+        PERMISSION_ACCESS_FINE_LOCATION,
+        call,
+        callbackName
+      );
+    }
+
+    if (getPermissionState(PERMISSION_ACCESS_COARSE_LOCATION) != PermissionState.GRANTED) {
+      return requestPermissionForAlias(
+        PERMISSION_ACCESS_COARSE_LOCATION,
+        call,
+        callbackName
+      );
+    }
+
+    if (getPermissionState(PERMISSION_ACCESS_WIFI_STATE) != PermissionState.GRANTED) {
+      return requestPermissionForAlias(
+        PERMISSION_ACCESS_WIFI_STATE,
+        call,
+        callbackName
+      );
+    }
+
+    if (getPermissionState(PERMISSION_CHANGE_WIFI_STATE) != PermissionState.GRANTED) {
+      return requestPermissionForAlias(
+        PERMISSION_CHANGE_WIFI_STATE,
+        call,
+        callbackName
+      );
+    }
+
+    if (getPermissionState(PERMISSION_CHANGE_NETWORK_STATE) != PermissionState.GRANTED) {
+      return requestPermissionForAlias(
+        PERMISSION_CHANGE_NETWORK_STATE,
+        call,
+        callbackName
+      );
+    }
+
+  }
+
+  private fun isPermissionGranted(): Boolean {
+    return getPermissionState(PERMISSION_ACCESS_FINE_LOCATION) == PermissionState.GRANTED &&
+      getPermissionState(PERMISSION_ACCESS_COARSE_LOCATION) == PermissionState.GRANTED &&
+      getPermissionState(PERMISSION_ACCESS_WIFI_STATE) == PermissionState.GRANTED &&
+      getPermissionState(PERMISSION_CHANGE_WIFI_STATE) == PermissionState.GRANTED &&
+      getPermissionState(PERMISSION_CHANGE_NETWORK_STATE) == PermissionState.GRANTED;
+  }
+
 }
