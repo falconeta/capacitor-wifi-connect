@@ -2,20 +2,141 @@ import Foundation
 
 import NetworkExtension
 import SystemConfiguration.CaptiveNetwork
+import CoreLocation
 
 public typealias PluginResultData = [String: Any]
 
-@objc public class CapacitorWifiConnect: NSObject {
-    @objc public func disconnect() -> Bool {
-        let ssid: String? = getSSID()
-        if(ssid == nil){
-            return false
+@objc public class CapacitorWifiConnect: NSObject, CLLocationManagerDelegate {
+    
+    static let sharedInstance = CapacitorWifiConnect()
+    private var locationManager = CLLocationManager()
+    private let operationQueue = OperationQueue()
+    private let operationQueueForRequest = OperationQueue()
+    private var status: CLAuthorizationStatus = CLAuthorizationStatus.notDetermined;
+    
+    override init(){
+        super.init()
+        
+        //Pause the operation queue because
+        // we don't know if we have location permissions yet
+        operationQueue.isSuspended = true
+        operationQueueForRequest.isSuspended = true
+        locationManager.delegate = self
+    }
+    
+    public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        
+        self.status = status;
+        //If we're authorized to use location services, run all operations in the queue
+        // otherwise if we were denied access, cancel the operations
+        if(status == .authorizedAlways || status == .authorizedWhenInUse){
+            self.operationQueue.isSuspended = false
+            self.operationQueueForRequest.isSuspended = false
+        }else if(status == .denied){
+            self.operationQueue.cancelAllOperations()
+            self.operationQueueForRequest.isSuspended = false
         }
-        NEHotspotConfigurationManager.shared.removeConfiguration(forSSID: ssid ?? "")
-        return true
+    }
+    
+    func runLocationBlock(callback: @escaping () -> ()){
+        
+        //Get the current authorization status
+        let authState = CLLocationManager.authorizationStatus()
+        
+        //If we have permissions, start executing the commands immediately
+        // otherwise request permission
+        if(authState == .authorizedAlways || authState == .authorizedWhenInUse){
+            self.operationQueue.isSuspended = false
+        }else{
+            //Request permission
+            locationManager.requestWhenInUseAuthorization()
+        }
+        
+        //Create a closure with the callback function so we can add it to the operationQueue
+        let block = { callback() }
+        
+        //Add block to the queue to be executed asynchronously
+        self.operationQueue.addOperation(block)
+    }
+    
+    func runLocationBlockRequest(callback: @escaping () -> ()){
+        
+        //Get the current authorization status
+        let authState = CLLocationManager.authorizationStatus()
+        
+        //If we have permissions, start executing the commands immediately
+        // otherwise request permission
+        if(authState == .authorizedAlways || authState == .authorizedWhenInUse){
+            self.operationQueueForRequest.isSuspended = false
+        }else{
+            //Request permission
+            locationManager.requestWhenInUseAuthorization()
+        }
+        
+        //Create a closure with the callback function so we can add it to the operationQueue
+        let block = { callback() }
+        
+        //Add block to the queue to be executed asynchronously
+        self.operationQueueForRequest.addOperation(block)
     }
 
-    @objc public func getSSID() -> String? {
+    private func mapStatus(status: CLAuthorizationStatus) -> String {
+        switch status {
+        case .authorizedAlways, .authorizedWhenInUse:
+            return "granted"
+        case .denied:
+            return "denied"
+        case .notDetermined:
+            return "prompt"
+        default:
+            return "prompt"
+        }
+    }
+    
+    @objc public func checkPermission(resolve: @escaping (PluginResultData) -> Void) -> Void {
+        resolve(["value": mapStatus(status: status)])
+    }
+
+    @objc public func requestPermission(resolve: @escaping (PluginResultData) -> Void, reject: @escaping (_ message: String, _ code: String? , _ error: Error? , _ data: PluginResultData? ) -> Void) -> Void {
+        
+        if(self.status != .notDetermined && self.status != .authorizedAlways && self.status != .authorizedWhenInUse) {
+            return reject("no permission", nil, nil, nil)
+        }
+        
+        runLocationBlockRequest {
+            resolve(["value": self.mapStatus(status: self.status)])
+        }
+    }
+    
+    @objc public func disconnect(resolve: @escaping (PluginResultData) -> Void, reject: @escaping (_ message: String, _ code: String? , _ error: Error? , _ data: PluginResultData? ) -> Void) -> Void {
+        
+        if(self.status != .notDetermined && self.status != .authorizedAlways && self.status != .authorizedWhenInUse) {
+            return reject("no permission", nil, nil, nil)
+        }
+        
+        runLocationBlock {
+            let ssid: String? = self._getSSID()
+            if(ssid == nil){
+                resolve(["value": false])
+            }
+            NEHotspotConfigurationManager.shared.removeConfiguration(forSSID: ssid ?? "")
+            resolve(["value": true])
+        }
+    }
+    
+    
+    @objc public func getSSID(resolve: @escaping (PluginResultData) -> Void, reject: @escaping (_ message: String, _ code: String? , _ error: Error? , _ data: PluginResultData? ) -> Void) -> Void {
+        
+        if(self.status != .notDetermined && self.status != .authorizedAlways && self.status != .authorizedWhenInUse) {
+            return reject("no permission", nil, nil, nil)
+        }
+        
+        runLocationBlock {
+            resolve(["value": self._getSSID() ?? ""])
+        }
+    }
+    
+    private func _getSSID() -> String? {
         var ssid: String?
         if let interfaces = CNCopySupportedInterfaces() as NSArray? {
             for interface in interfaces {
@@ -25,37 +146,64 @@ public typealias PluginResultData = [String: Any]
                 }
             }
         }
-        return ssid
+        return ssid;
     }
-
-    @objc public func connect(ssid: String, saveNetwork: Bool, resolve: @escaping (PluginResultData) -> Void) -> Void {
-        let hotspotConfig = NEHotspotConfiguration.init(ssid: ssid)
-        hotspotConfig.joinOnce = !saveNetwork;
-        return execConnect(hotspotConfig: hotspotConfig, resolve: resolve);
+    
+    @objc public func connect(ssid: String, saveNetwork: Bool, resolve: @escaping (PluginResultData) -> Void, reject: @escaping (_ message: String, _ code: String? , _ error: Error? , _ data: PluginResultData? ) -> Void) -> Void {
+        
+        if(self.status != .notDetermined && self.status != .authorizedAlways && self.status != .authorizedWhenInUse) {
+            return reject("no permission", nil, nil, nil)
+        }
+        
+        runLocationBlock {
+            let hotspotConfig = NEHotspotConfiguration.init(ssid: ssid)
+            hotspotConfig.joinOnce = !saveNetwork;
+            return self.execConnect(hotspotConfig: hotspotConfig, resolve: resolve);
+        }
     }
-
-    @objc public func prefixConnect(ssid: String, saveNetwork: Bool, resolve: @escaping (PluginResultData) -> Void) -> Void {
-        let hotspotConfig = NEHotspotConfiguration.init(ssidPrefix: ssid)
-        hotspotConfig.joinOnce = !saveNetwork;
-        return execConnect(hotspotConfig: hotspotConfig, resolve: resolve);
+    
+    @objc public func prefixConnect(ssid: String, saveNetwork: Bool, resolve: @escaping (PluginResultData) -> Void, reject: @escaping (_ message: String, _ code: String? , _ error: Error? , _ data: PluginResultData? ) -> Void) -> Void {
+        
+        if(self.status != .notDetermined && self.status != .authorizedAlways && self.status != .authorizedWhenInUse) {
+            return reject("no permission", nil, nil, nil)
+        }
+        
+        runLocationBlock {
+            let hotspotConfig = NEHotspotConfiguration.init(ssidPrefix: ssid)
+            hotspotConfig.joinOnce = !saveNetwork;
+            return self.execConnect(hotspotConfig: hotspotConfig, resolve: resolve);
+        }
     }
-
-    @objc public func secureConnect(ssid: String, password: String, saveNetwork: Bool, isWep: Bool, resolve: @escaping (PluginResultData) -> Void) -> Void {
-        let hotspotConfig = NEHotspotConfiguration.init(ssid: ssid, passphrase: password, isWEP: isWep)
-        hotspotConfig.joinOnce = !saveNetwork;
-        return execConnect(hotspotConfig: hotspotConfig, resolve: resolve);
-
+    
+    @objc public func secureConnect(ssid: String, password: String, saveNetwork: Bool, isWep: Bool, resolve: @escaping (PluginResultData) -> Void, reject: @escaping (_ message: String, _ code: String? , _ error: Error? , _ data: PluginResultData? ) -> Void) -> Void {
+        runLocationBlock {
+            
+            if(self.status != .notDetermined && self.status != .authorizedAlways && self.status != .authorizedWhenInUse) {
+                return reject("no permission", nil, nil, nil)
+            }
+            
+            let hotspotConfig = NEHotspotConfiguration.init(ssid: ssid, passphrase: password, isWEP: isWep)
+            hotspotConfig.joinOnce = !saveNetwork;
+            return self.execConnect(hotspotConfig: hotspotConfig, resolve: resolve);
+        }
     }
-
-    @objc public func securePrefixConnect(ssid: String, password: String, saveNetwork: Bool, isWep: Bool, resolve: @escaping (PluginResultData) -> Void) -> Void {
-        let hotspotConfig = NEHotspotConfiguration.init(ssidPrefix: ssid, passphrase: password, isWEP: isWep)
-        hotspotConfig.joinOnce = !saveNetwork;
-        return execConnect(hotspotConfig: hotspotConfig, resolve: resolve);
+    
+    @objc public func securePrefixConnect(ssid: String, password: String, saveNetwork: Bool, isWep: Bool, resolve: @escaping (PluginResultData) -> Void, reject: @escaping (_ message: String, _ code: String? , _ error: Error? , _ data: PluginResultData? ) -> Void) -> Void {
+        
+        if(self.status != .notDetermined && self.status != .authorizedAlways && self.status != .authorizedWhenInUse) {
+            return reject("no permission", nil, nil, nil)
+        }
+        
+        runLocationBlock {
+            let hotspotConfig = NEHotspotConfiguration.init(ssidPrefix: ssid, passphrase: password, isWEP: isWep)
+            hotspotConfig.joinOnce = !saveNetwork;
+            return self.execConnect(hotspotConfig: hotspotConfig, resolve: resolve);
+        }   
     }
-
+    
     private func execConnect(hotspotConfig: NEHotspotConfiguration, resolve: @escaping (PluginResultData) -> Void) -> Void {
         NEHotspotConfigurationManager.shared.apply(hotspotConfig) { [weak self] (error) in
-
+            
             if let error = error as NSError? {
                 switch(error.code) {
                 case NEHotspotConfigurationError.alreadyAssociated.rawValue:
@@ -74,12 +222,13 @@ public typealias PluginResultData = [String: Any]
                 resolve(["value": -3]);
                 return
             }
-
-            if let currentSsid = this.getSSID(), currentSsid.hasPrefix(hotspotConfig.ssid){
+            
+            if let currentSsid = this._getSSID(), currentSsid.hasPrefix(hotspotConfig.ssid){
                 resolve(["value": 0]);
                 return;
             }
             resolve(["value": -4]);
         }
     }
+    
 }

@@ -1,4 +1,4 @@
-import { WebPlugin } from '@capacitor/core';
+import { WebPlugin, PermissionState } from '@capacitor/core';
 
 import type { CapacitorWifiConnectPlugin } from './definitions';
 
@@ -6,6 +6,14 @@ export class CapacitorWifiConnectPluginWeb
   extends WebPlugin
   implements CapacitorWifiConnectPlugin
 {
+
+  checkPermission(): Promise<{ value: PermissionState }>{
+    throw new Error('Method not implemented.');
+  }
+  requestPermission(): Promise<{ value: PermissionState }>{
+    throw new Error('Method not implemented.');
+  }
+
   disconnect(): Promise<{ value: boolean }> {
     throw new Error('Method not implemented.');
   }

@@ -9,59 +9,63 @@ import Capacitor
 public class CapacitorWifiConnectPlugin: CAPPlugin {
     private let implementation = CapacitorWifiConnect()
 
+    @objc func checkPermission(_ call: CAPPluginCall) {
+        implementation.checkPermission(resolve: call.resolve);
+    }
+    
+    @objc func requestPermission(_ call: CAPPluginCall) {
+        implementation.requestPermission(resolve: call.resolve, reject: call.reject);
+    }
+    
     @objc func disconnect(_ call: CAPPluginCall) {
-        call.resolve([
-            "value": implementation.disconnect()
-        ])
+        implementation.disconnect(resolve: call.resolve, reject: call.reject);
     }
-
+    
     @objc func getSSID(_ call: CAPPluginCall) {
-        call.resolve([
-            "value": implementation.getSSID() ?? ""
-        ])
+        implementation.getSSID(resolve: call.resolve, reject: call.reject);
     }
-
+    
     @objc func connect(_ call: CAPPluginCall) {
         let ssid = call.getString("ssid");
         let saveNetwork = call.getBool("saveNetwork") ?? false;
         if(ssid != nil) {
-            implementation.connect(ssid: ssid!, saveNetwork: saveNetwork, resolve: call.resolve);
+            implementation.connect(ssid: ssid!, saveNetwork: saveNetwork, resolve: call.resolve, reject: call.reject);
         } else {
             call.reject("SSID is mandatory")
         }
     }
-
+    
     @objc func prefixConnect(_ call: CAPPluginCall) {
         let ssid = call.getString("ssid");
         let saveNetwork =  call.getBool("saveNetwork") ?? false;
         if(ssid != nil) {
-
-            implementation.prefixConnect(ssid: ssid!, saveNetwork: saveNetwork, resolve: call.resolve);
+      
+            implementation.prefixConnect(ssid: ssid!, saveNetwork: saveNetwork, resolve: call.resolve, reject: call.reject);
         } else {
             call.reject("SSID is mandatory")
         }
     }
-
+    
     @objc func secureConnect(_ call: CAPPluginCall) {
         let ssid = call.getString("ssid");
         let password = call.getString("password");
         let saveNetwork = call.getBool("saveNetwork") ?? false;
         let isWep = call.getBool("isWep") ?? false;
         if(ssid != nil && password != nil) {
-            implementation.secureConnect(ssid: ssid!, password: password!, saveNetwork: saveNetwork, isWep: isWep, resolve: call.resolve);
+            implementation.secureConnect(ssid: ssid!, password: password!, saveNetwork: saveNetwork, isWep: isWep, resolve: call.resolve, reject: call.reject);
         } else {
             call.reject("SSID and password are mandatory")
         }
     }
-
+    
     @objc func securePrefixConnect(_ call: CAPPluginCall) {
         let ssid = call.getString("ssid");
         let password = call.getString("password");
         let saveNetwork = call.getBool("saveNetwork") ?? false;
         let isWep = call.getBool("isWep") ?? false;
         if(ssid != nil && password != nil) {
-
-            implementation.securePrefixConnect(ssid:ssid!, password:password!, saveNetwork:saveNetwork, isWep: isWep, resolve: call.resolve);
+            
+            implementation.securePrefixConnect(ssid:ssid!, password:password!, saveNetwork:saveNetwork, isWep: isWep, resolve: call.resolve, reject: call.reject);
         } else {
             call.reject("SSID and password are mandatory")
         }

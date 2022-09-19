@@ -35,18 +35,43 @@ For functionality, you need to note the following:
 
 <docgen-index>
 
+* [`checkPermission()`](#checkpermission)
+* [`requestPermission()`](#requestpermission)
 * [`disconnect()`](#disconnect)
 * [`getSSID()`](#getssid)
 * [`connect(...)`](#connect)
 * [`prefixConnect(...)`](#prefixconnect)
 * [`secureConnect(...)`](#secureconnect)
 * [`securePrefixConnect(...)`](#secureprefixconnect)
+* [Type Aliases](#type-aliases)
 * [Enums](#enums)
 
 </docgen-index>
 
 <docgen-api>
 <!--Update the source file JSDoc comments and rerun docgen to update the docs below-->
+
+### checkPermission()
+
+```typescript
+checkPermission() => Promise<{ value: PermissionState; }>
+```
+
+**Returns:** <code>Promise&lt;{ value: <a href="#permissionstate">PermissionState</a>; }&gt;</code>
+
+--------------------
+
+
+### requestPermission()
+
+```typescript
+requestPermission() => Promise<{ value: PermissionState; }>
+```
+
+**Returns:** <code>Promise&lt;{ value: <a href="#permissionstate">PermissionState</a>; }&gt;</code>
+
+--------------------
+
 
 ### disconnect()
 
@@ -128,6 +153,14 @@ securePrefixConnect(options: { ssid: string; password: string; saveNetwork?: boo
 **Returns:** <code>Promise&lt;{ value: <a href="#connectstate">ConnectState</a>; }&gt;</code>
 
 --------------------
+
+
+### Type Aliases
+
+
+#### PermissionState
+
+<code>'prompt' | 'prompt-with-rationale' | 'granted' | 'denied'</code>
 
 
 ### Enums

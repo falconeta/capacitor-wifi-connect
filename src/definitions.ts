@@ -1,4 +1,7 @@
+import { PermissionState } from '@capacitor/core';
 export interface CapacitorWifiConnectPlugin {
+  checkPermission(): Promise<{ value: PermissionState }>;
+  requestPermission(): Promise<{ value: PermissionState }>;
   disconnect(): Promise<{ value: boolean }>;
 
   getSSID(): Promise<{ value: string }>;
