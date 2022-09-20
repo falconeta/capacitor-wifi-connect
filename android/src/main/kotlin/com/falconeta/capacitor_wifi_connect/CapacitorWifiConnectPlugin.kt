@@ -48,6 +48,45 @@ class CapacitorWifiConnectPlugin : Plugin() {
   }
 
   @PluginMethod
+  fun checkPermission(call: PluginCall) {
+    val ret = JSObject();
+
+    if(isPermissionGranted()) {
+      ret.put("value", PermissionState.GRANTED);
+    } else if(isPermissionPrompt()) {
+      ret.put("value", PermissionState.PROMPT);
+    } else {
+      ret.put("value", PermissionState.DENIED);
+    }
+
+    call.resolve(ret);
+  }
+
+  @PluginMethod
+  fun requestPermission(call: PluginCall) {
+    if (!isPermissionGranted()) {
+      checkPermission(call, "requestPermissionCallback");
+      return;
+    }
+    val ret = JSObject();
+    ret.put("value", PermissionState.GRANTED);
+    call.resolve(ret);
+  }
+
+  @PermissionCallback
+  private fun requestPermissionCallback(call: PluginCall) {
+    val ret = JSObject();
+    if(isPermissionGranted()) {
+      ret.put("value", PermissionState.GRANTED);
+    } else if(isPermissionPrompt()) {
+      ret.put("value", PermissionState.PROMPT);
+    } else {
+      ret.put("value", PermissionState.DENIED);
+    }
+    call.resolve(ret);
+  }
+
+  @PluginMethod
   fun disconnect(call: PluginCall) {
     if (!isPermissionGranted()) {
       checkPermission(call, "disconnectCallback");
@@ -228,10 +267,16 @@ class CapacitorWifiConnectPlugin : Plugin() {
 
   private fun isPermissionGranted(): Boolean {
     return getPermissionState(PERMISSION_ACCESS_FINE_LOCATION) == PermissionState.GRANTED &&
-      getPermissionState(PERMISSION_ACCESS_COARSE_LOCATION) == PermissionState.GRANTED &&
       getPermissionState(PERMISSION_ACCESS_WIFI_STATE) == PermissionState.GRANTED &&
       getPermissionState(PERMISSION_CHANGE_WIFI_STATE) == PermissionState.GRANTED &&
       getPermissionState(PERMISSION_CHANGE_NETWORK_STATE) == PermissionState.GRANTED;
+  }
+
+  private fun isPermissionPrompt(): Boolean {
+    return getPermissionState(PERMISSION_ACCESS_FINE_LOCATION) == PermissionState.PROMPT ||
+      getPermissionState(PERMISSION_ACCESS_WIFI_STATE) == PermissionState.PROMPT ||
+      getPermissionState(PERMISSION_CHANGE_WIFI_STATE) == PermissionState.PROMPT ||
+      getPermissionState(PERMISSION_CHANGE_NETWORK_STATE) == PermissionState.PROMPT;
   }
 
 }
