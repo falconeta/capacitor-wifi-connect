@@ -384,7 +384,17 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
     }
 
     val handler = Handler(Looper.getMainLooper())
-    connectivityManager.requestNetwork(request, networkCallback!!, handler)
+    
+    if (wifiManager.isWifiEnabled) {
+      connectivityManager.requestNetwork(request, networkCallback!!, handler)
+    } else {
+      if (_call != null) {
+        val ret = JSObject()
+        ret.put("value", -4);
+        _call?.let { it.resolve(ret) };
+        _call = null;
+      }
+    }
   }
 
   @RequiresApi(Build.VERSION_CODES.Q)

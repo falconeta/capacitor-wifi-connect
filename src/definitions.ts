@@ -36,4 +36,5 @@ export enum ConnectState {
   Denied = -1,
   Ko = -2,
   UnknowSsid = -3,
+  WifiDisabled = -4
 }
