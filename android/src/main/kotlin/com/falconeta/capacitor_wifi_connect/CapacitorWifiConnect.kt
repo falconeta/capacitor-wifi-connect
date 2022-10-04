@@ -330,6 +330,16 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
 
   @RequiresApi(Build.VERSION_CODES.Q)
   private fun execConnect(@NonNull specifier: WifiNetworkSpecifier) {
+    if (!wifiManager.isWifiEnabled) {
+      if (_call != null) {
+        val ret = JSObject()
+        ret.put("value", -4);
+        _call?.let { it.resolve(ret) };
+        _call = null;
+      }
+      return;
+    }
+
     if (networkCallback != null) {
       // there was already a connection, unregister to disconnect before proceeding
       connectivityManager.unregisterNetworkCallback(networkCallback!!)
@@ -384,17 +394,7 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
     }
 
     val handler = Handler(Looper.getMainLooper())
-    
-    if (wifiManager.isWifiEnabled) {
-      connectivityManager.requestNetwork(request, networkCallback!!, handler)
-    } else {
-      if (_call != null) {
-        val ret = JSObject()
-        ret.put("value", -4);
-        _call?.let { it.resolve(ret) };
-        _call = null;
-      }
-    }
+    connectivityManager.requestNetwork(request, networkCallback!!, handler)
   }
 
   @RequiresApi(Build.VERSION_CODES.Q)
