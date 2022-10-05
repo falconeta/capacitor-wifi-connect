@@ -101,7 +101,7 @@ class CapacitorWifiConnectPlugin : Plugin() {
     if (isPermissionGranted()) {
       disconnect(call);
     } else {
-      call.reject("Permission is required")
+      call.reject("-1")
     }
   }
 
@@ -121,7 +121,7 @@ class CapacitorWifiConnectPlugin : Plugin() {
     if (isPermissionGranted()) {
       getSSID(call);
     } else {
-      call.reject("Permission is required")
+      call.reject("-1")
     }
   }
 
@@ -145,7 +145,7 @@ class CapacitorWifiConnectPlugin : Plugin() {
     if (isPermissionGranted()) {
       connect(call);
     } else {
-      call.reject("Permission is required")
+      call.reject("-1")
     }
   }
 
@@ -168,7 +168,7 @@ class CapacitorWifiConnectPlugin : Plugin() {
     if (isPermissionGranted()) {
       prefixConnect(call);
     } else {
-      call.reject("Permission is required")
+      call.reject("-1")
     }
   }
 
@@ -193,7 +193,7 @@ class CapacitorWifiConnectPlugin : Plugin() {
     if (isPermissionGranted()) {
       secureConnect(call);
     } else {
-      call.reject("Permission is required")
+      call.reject("-1")
     }
   }
 
@@ -217,7 +217,7 @@ class CapacitorWifiConnectPlugin : Plugin() {
     if (isPermissionGranted()) {
       securePrefixConnect(call);
     } else {
-      call.reject("Permission is required")
+      call.reject("-1")
     }
   }
 

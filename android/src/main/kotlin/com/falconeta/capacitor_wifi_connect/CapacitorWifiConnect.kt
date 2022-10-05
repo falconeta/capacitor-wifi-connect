@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.location.LocationManager
 import android.net.*
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
@@ -37,6 +38,10 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
     _context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
   }
 
+  private val locationManager: LocationManager by lazy(LazyThreadSafetyMode.NONE) {
+    _context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+  }
+
   private val wifiManager: WifiManager by lazy(LazyThreadSafetyMode.NONE) {
     _context.getSystemService(Context.WIFI_SERVICE) as WifiManager
   }
@@ -55,6 +60,13 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
   fun disconnect(
     @NonNull call: PluginCall
   ) {
+
+    val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    if(!networkEnabled) {
+      call.reject("-2")
+      return
+    }
+    
     _call = call;
     when {
       Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
@@ -76,6 +88,13 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
     @NonNull ssid: String,
     @NonNull call: PluginCall
   ) {
+
+    val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    if(!networkEnabled) {
+      call.reject("-2")
+      return
+    }
+    
     _call = call;
     ssid.let {
       when {
@@ -99,6 +118,13 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
     @NonNull ssid: String,
     @NonNull call: PluginCall
   ) {
+    
+    val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    if(!networkEnabled) {
+      call.reject("-2")
+      return
+    }
+
     _call = call;
     ssid.let {
       when {
@@ -125,6 +151,13 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
     @NonNull isWep: Boolean,
     @NonNull call: PluginCall
   ) {
+    
+    val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    if(!networkEnabled) {
+      call.reject("-2")
+      return
+    }
+    
     _call = call;
     if (isWep || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
       val wifiConfig = isWep.let {
@@ -158,6 +191,13 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
     @NonNull isWep: Boolean,
     @NonNull call: PluginCall
   ) {
+    
+    val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    if(!networkEnabled) {
+      call.reject("-2")
+      return
+    }
+    
     _call = call;
     if (ssid == null || password == null || isWep == null) {
       return
@@ -197,9 +237,11 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
     @NonNull config: WifiConfiguration
   ) {
     val wifiScanReceiver = object : BroadcastReceiver() {
-      override fun onReceive(context: Context?, intent: Intent?) {
-        val ssid = getNearbySsid(ssidPrefix)
-        when {
+      override fun onReceive(context: Context, intent: Intent) {
+        val success = intent.getBooleanExtra(WifiManager.EXTRA_RESULTS_UPDATED, false)
+        if (success) {
+          val ssid = getNearbySsid(ssidPrefix)
+          when {
           ssid != null -> {
             execConnect(config.apply {
               SSID = "\"" + ssid + "\""
@@ -207,10 +249,16 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
           }
           else -> {
             val ret = JSObject()
-            ret.put("value", false);
+            ret.put("value", -2);
             _call?.let { it.resolve(ret) };
             _call = null;
           }
+        }
+        } else {
+          val ret = JSObject()
+          ret.put("value", -1);
+          _call?.let { it.resolve(ret) };
+          _call = null;
         }
         context?.unregisterReceiver(this)
       }
@@ -220,9 +268,11 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
     intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
     _context.registerReceiver(wifiScanReceiver, intentFilter)
 
-    val scanStarted = wifiManager.startScan()
-    if (!scanStarted) {
-      wifiScanReceiver.onReceive(null, null)
+    val success = wifiManager.startScan()
+    if (!success) {
+      _call?.let { it.reject("-999") };
+      _call = null;
+     _context?.unregisterReceiver(wifiScanReceiver)
     }
   }
 
@@ -288,7 +338,7 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
     val network = wifiManager.addNetwork(wifiConfiguration)
     if (network == -1) {
       val ret = JSObject()
-      ret.put("value", false);
+      ret.put("value", -1);
       _call?.let { it.resolve(ret) };
       _call = null;
       return
@@ -303,14 +353,14 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
         if (info != null && info.isConnected) {
           if (info.extraInfo == wifiConfiguration.SSID || getSSID() == wifiConfiguration.SSID) {
             val ret = JSObject()
-            ret.put("value", true);
+            ret.put("value", 0);
             _call?.let { it.resolve(ret) };
             _call = null;
             context?.unregisterReceiver(this)
           } else if (count > 1) {
             // Ignore first callback if not success. It may be for the already connected SSID
             val ret = JSObject()
-            ret.put("value", false);
+            ret.put("value", -1);
             _call?.let { it.resolve(ret) };
             _call = null;
             context?.unregisterReceiver(this)
@@ -442,6 +492,4 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
     wifiManager.reconnect()
     networkId = null
   }
-
-
 }

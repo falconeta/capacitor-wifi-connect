@@ -38,3 +38,9 @@ export enum ConnectState {
   UnknowSsid = -3,
   WifiDisabled = -4
 }
+
+export enum ConnectStateError {
+  AppLocalizationPermission = -1,
+  SystemLocalizationPermission = -2,
+  Generic = -999
+}
