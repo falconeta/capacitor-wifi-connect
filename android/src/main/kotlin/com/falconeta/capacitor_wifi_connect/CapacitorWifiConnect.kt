@@ -63,7 +63,9 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
 
     val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     if(!networkEnabled) {
-      call.reject("-2")
+      val ret = JSObject()
+      ret.put("value", -6);
+      call.resolve(ret)
       return
     }
     
@@ -91,7 +93,9 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
 
     val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     if(!networkEnabled) {
-      call.reject("-2")
+      val ret = JSObject()
+      ret.put("value", -6);
+      call.resolve(ret)
       return
     }
     
@@ -121,7 +125,9 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
     
     val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     if(!networkEnabled) {
-      call.reject("-2")
+      val ret = JSObject()
+      ret.put("value", -6);
+      call.resolve(ret)
       return
     }
 
@@ -154,7 +160,9 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
     
     val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     if(!networkEnabled) {
-      call.reject("-2")
+      val ret = JSObject()
+      ret.put("value", -6);
+      call.resolve(ret)
       return
     }
     
@@ -194,7 +202,9 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
     
     val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     if(!networkEnabled) {
-      call.reject("-2")
+      val ret = JSObject()
+      ret.put("value", -6);
+      call.resolve(ret)
       return
     }
     
@@ -270,7 +280,7 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
 
     val success = wifiManager.startScan()
     if (!success) {
-      _call?.let { it.reject("-999") };
+      _call?.let { it.reject("error on startScan") };
       _call = null;
      _context?.unregisterReceiver(wifiScanReceiver)
     }

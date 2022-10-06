@@ -168,12 +168,14 @@ securePrefixConnect(options: { ssid: string; password: string; saveNetwork?: boo
 
 #### ConnectState
 
-| Members            | Value           |
-| ------------------ | --------------- |
-| **`Ok`**           | <code>0</code>  |
-| **`Denied`**       | <code>-1</code> |
-| **`Ko`**           | <code>-2</code> |
-| **`UnknowSsid`**   | <code>-3</code> |
-| **`WifiDisabled`** | <code>-4</code> |
+| Members                            | Value           |
+| ---------------------------------- | --------------- |
+| **`Ok`**                           | <code>0</code>  |
+| **`Denied`**                       | <code>-1</code> |
+| **`Ko`**                           | <code>-2</code> |
+| **`UnknowSsid`**                   | <code>-3</code> |
+| **`WifiDisabled`**                 | <code>-4</code> |
+| **`AppLocalizationPermission`**    | <code>-5</code> |
+| **`SystemLocalizationPermission`** | <code>-6</code> |
 
 </docgen-api>

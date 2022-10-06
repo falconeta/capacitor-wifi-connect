@@ -101,7 +101,9 @@ class CapacitorWifiConnectPlugin : Plugin() {
     if (isPermissionGranted()) {
       disconnect(call);
     } else {
-      call.reject("-1")
+        val ret = JSObject()
+        ret.put("value", -5);
+        call.resolve(ret)
     }
   }
 
@@ -121,7 +123,9 @@ class CapacitorWifiConnectPlugin : Plugin() {
     if (isPermissionGranted()) {
       getSSID(call);
     } else {
-      call.reject("-1")
+      val ret = JSObject()
+      ret.put("value", -5);
+      call.resolve(ret)
     }
   }
 
@@ -145,7 +149,9 @@ class CapacitorWifiConnectPlugin : Plugin() {
     if (isPermissionGranted()) {
       connect(call);
     } else {
-      call.reject("-1")
+      val ret = JSObject()
+      ret.put("value", -5);
+      call.resolve(ret)
     }
   }
 
@@ -168,7 +174,9 @@ class CapacitorWifiConnectPlugin : Plugin() {
     if (isPermissionGranted()) {
       prefixConnect(call);
     } else {
-      call.reject("-1")
+      val ret = JSObject()
+      ret.put("value", -5);
+      call.resolve(ret)
     }
   }
 
@@ -193,7 +201,9 @@ class CapacitorWifiConnectPlugin : Plugin() {
     if (isPermissionGranted()) {
       secureConnect(call);
     } else {
-      call.reject("-1")
+      val ret = JSObject()
+      ret.put("value", -5);
+      call.resolve(ret)
     }
   }
 
@@ -217,7 +227,9 @@ class CapacitorWifiConnectPlugin : Plugin() {
     if (isPermissionGranted()) {
       securePrefixConnect(call);
     } else {
-      call.reject("-1")
+      val ret = JSObject()
+      ret.put("value", -5);
+      call.resolve(ret)
     }
   }
 
