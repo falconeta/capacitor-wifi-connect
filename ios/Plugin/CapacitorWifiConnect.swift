@@ -13,13 +13,13 @@ public typealias PluginResultData = [String: Any]
     private let operationQueue = OperationQueue()
     private let operationQueueForRequest = OperationQueue()
     private var status: CLAuthorizationStatus = CLAuthorizationStatus.notDetermined;
-    private var reject: ((_ message: String, _ code: String? , _ error: Error?, _ data: PluginResultData?)-> Void)?
+    private var resolve: ((PluginResultData) -> Void)?
     
     override init(){
         super.init()
         //Pause the operation queue because
         // we don't know if we have location permissions yet
-        reject = nil;
+        resolve = nil;
         operationQueue.isSuspended = true
         operationQueueForRequest.isSuspended = true
         locationManager.delegate = self
@@ -36,9 +36,9 @@ public typealias PluginResultData = [String: Any]
         }else if(status == .denied){
             self.operationQueue.cancelAllOperations()
             self.operationQueueForRequest.isSuspended = false
-            if(reject != nil) {
-                self.reject!("no permission", nil, nil, nil);
-                self.reject = nil;
+            if(self.resolve != nil) {
+                self.resolve!(["value": -5]);
+                self.resolve = nil;
             }
         }
     }
@@ -105,10 +105,10 @@ public typealias PluginResultData = [String: Any]
     @objc public func requestPermission(resolve: @escaping (PluginResultData) -> Void, reject: @escaping (_ message: String, _ code: String? , _ error: Error? , _ data: PluginResultData? ) -> Void) -> Void {
         
         if(self.status != .notDetermined && self.status != .authorizedAlways && self.status != .authorizedWhenInUse) {
-            return reject("no permission", nil, nil, nil)
+            return resolve(["value": -5])
         }
         
-        self.reject = reject;
+        self.resolve = resolve;
         
         runLocationBlockRequest {
             resolve(["value": self.mapStatus(status: self.status)])
@@ -118,10 +118,10 @@ public typealias PluginResultData = [String: Any]
     @objc public func disconnect(resolve: @escaping (PluginResultData) -> Void, reject: @escaping (_ message: String, _ code: String? , _ error: Error? , _ data: PluginResultData? ) -> Void) -> Void {
         
         if(self.status != .notDetermined && self.status != .authorizedAlways && self.status != .authorizedWhenInUse) {
-            return reject("no permission", nil, nil, nil)
+            return resolve(["value": -5])
         }
         
-        self.reject = reject;
+        self.resolve = resolve;
         
         runLocationBlock {
             let ssid: String? = self._getSSID()
@@ -137,10 +137,10 @@ public typealias PluginResultData = [String: Any]
     @objc public func getSSID(resolve: @escaping (PluginResultData) -> Void, reject: @escaping (_ message: String, _ code: String? , _ error: Error? , _ data: PluginResultData? ) -> Void) -> Void {
         
         if(self.status != .notDetermined && self.status != .authorizedAlways && self.status != .authorizedWhenInUse) {
-            return reject("no permission", nil, nil, nil)
+            return resolve(["value": -5])
         }
         
-        self.reject = reject;
+        self.resolve = resolve;
         
         runLocationBlock {
             resolve(["value": self._getSSID() ?? ""])
@@ -163,10 +163,10 @@ public typealias PluginResultData = [String: Any]
     @objc public func connect(ssid: String, saveNetwork: Bool, resolve: @escaping (PluginResultData) -> Void, reject: @escaping (_ message: String, _ code: String? , _ error: Error? , _ data: PluginResultData? ) -> Void) -> Void {
         
         if(self.status != .notDetermined && self.status != .authorizedAlways && self.status != .authorizedWhenInUse) {
-            return reject("no permission", nil, nil, nil)
+            return resolve(["value": -5])
         }
         
-        self.reject = reject;
+        self.resolve = resolve;
         
         runLocationBlock {
             let hotspotConfig = NEHotspotConfiguration.init(ssid: ssid)
@@ -178,10 +178,10 @@ public typealias PluginResultData = [String: Any]
     @objc public func prefixConnect(ssid: String, saveNetwork: Bool, resolve: @escaping (PluginResultData) -> Void, reject: @escaping (_ message: String, _ code: String? , _ error: Error? , _ data: PluginResultData? ) -> Void) -> Void {
         
         if(self.status != .notDetermined && self.status != .authorizedAlways && self.status != .authorizedWhenInUse) {
-            return reject("no permission", nil, nil, nil)
+            return resolve(["value": -5])
         }
         
-        self.reject = reject;
+        self.resolve = resolve;
         
         runLocationBlock {
             let hotspotConfig = NEHotspotConfiguration.init(ssidPrefix: ssid)
@@ -192,11 +192,11 @@ public typealias PluginResultData = [String: Any]
     
     @objc public func secureConnect(ssid: String, password: String, saveNetwork: Bool, isWep: Bool, resolve: @escaping (PluginResultData) -> Void, reject: @escaping (_ message: String, _ code: String? , _ error: Error? , _ data: PluginResultData? ) -> Void) -> Void {
         
-        self.reject = reject;
+        self.resolve = resolve;
         
         runLocationBlock {
             if(self.status != .notDetermined && self.status != .authorizedAlways && self.status != .authorizedWhenInUse) {
-                return reject("no permission", nil, nil, nil)
+                return resolve(["value": -5])
             }
             
             let hotspotConfig = NEHotspotConfiguration.init(ssid: ssid, passphrase: password, isWEP: isWep)
@@ -208,10 +208,10 @@ public typealias PluginResultData = [String: Any]
     @objc public func securePrefixConnect(ssid: String, password: String, saveNetwork: Bool, isWep: Bool, resolve: @escaping (PluginResultData) -> Void, reject: @escaping (_ message: String, _ code: String? , _ error: Error? , _ data: PluginResultData? ) -> Void) -> Void {
         
         if(self.status != .notDetermined && self.status != .authorizedAlways && self.status != .authorizedWhenInUse) {
-            return reject("no permission", nil, nil, nil)
+            return resolve(["value": -5])
         }
         
-        self.reject = reject;
+        self.resolve = resolve;
         
         runLocationBlock {
             let hotspotConfig = NEHotspotConfiguration.init(ssidPrefix: ssid, passphrase: password, isWEP: isWep)
