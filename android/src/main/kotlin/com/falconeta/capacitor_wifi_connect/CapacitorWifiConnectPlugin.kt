@@ -5,6 +5,7 @@ import com.getcapacitor.*
 import com.getcapacitor.annotation.CapacitorPlugin
 import com.getcapacitor.annotation.Permission
 import com.getcapacitor.annotation.PermissionCallback
+import kotlin.coroutines.suspendCoroutine
 
 
 private const val PERMISSION_ACCESS_FINE_LOCATION = "access-fine-location";
@@ -196,6 +197,16 @@ class CapacitorWifiConnectPlugin : Plugin() {
     }
   }
 
+  @PluginMethod
+  fun getSSIDs(call: PluginCall) {
+    if (!isPermissionGranted()) {
+      checkPermission(call, "getSSIDsPermsCallback");
+      return;
+    }
+
+    implementation.getSSIDs(call)
+  }
+
   @PermissionCallback
   private fun secureConnectPermsCallback(call: PluginCall) {
     if (isPermissionGranted()) {
@@ -203,6 +214,17 @@ class CapacitorWifiConnectPlugin : Plugin() {
     } else {
       val ret = JSObject()
       ret.put("value", -5);
+      call.resolve(ret)
+    }
+  }
+
+  @PermissionCallback
+  private fun getSSIDsPermsCallback(call: PluginCall) {
+    if (isPermissionGranted()) {
+      getSSIDs(call);
+    } else {
+      val ret = JSObject()
+      ret.put("value", -2);
       call.resolve(ret)
     }
   }
@@ -232,7 +254,6 @@ class CapacitorWifiConnectPlugin : Plugin() {
       call.resolve(ret)
     }
   }
-
 
   private fun checkPermission(call: PluginCall, callbackName: String) {
     if (getPermissionState(PERMISSION_ACCESS_FINE_LOCATION) != PermissionState.GRANTED) {
