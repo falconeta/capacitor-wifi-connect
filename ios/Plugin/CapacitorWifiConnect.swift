@@ -63,6 +63,22 @@ public typealias PluginResultData = [String: Any]
         //Add block to the queue to be executed asynchronously
         self.operationQueue.addOperation(block)
     }
+
+    func runIsWifiBlock(callback: @escaping (_ value: Bool) -> ()){
+        let monitorWiFi = NWPathMonitor(requiredInterfaceType: .wifi)
+        monitorWiFi.pathUpdateHandler = { path in
+            DispatchQueue.main.async {
+                switch path.status {
+                case .satisfied:
+                    callback(true);
+                default:
+                    callback(false);
+                }
+                monitorWiFi.cancel();
+            }
+        }
+        monitorWiFi.start(queue: DispatchQueue(label: "monitorWiFi"))
+    }
     
     func runLocationBlockRequest(callback: @escaping () -> ()){
         
@@ -84,7 +100,7 @@ public typealias PluginResultData = [String: Any]
         //Add block to the queue to be executed asynchronously
         self.operationQueueForRequest.addOperation(block)
     }
-
+    
     private func mapStatus(status: CLAuthorizationStatus) -> String {
         switch status {
         case .authorizedAlways, .authorizedWhenInUse:
@@ -101,7 +117,7 @@ public typealias PluginResultData = [String: Any]
     @objc public func checkPermission(resolve: @escaping (PluginResultData) -> Void) -> Void {
         resolve(["value": mapStatus(status: status)])
     }
-
+    
     @objc public func requestPermission(resolve: @escaping (PluginResultData) -> Void, reject: @escaping (_ message: String, _ code: String? , _ error: Error? , _ data: PluginResultData? ) -> Void) -> Void {
         
         if(self.status != .notDetermined && self.status != .authorizedAlways && self.status != .authorizedWhenInUse) {
@@ -181,13 +197,16 @@ public typealias PluginResultData = [String: Any]
             return resolve(["value": -5])
         }
         
+        
         self.resolve = resolve;
         
-        runLocationBlock {
+        
+        self.runLocationBlock {
             let hotspotConfig = NEHotspotConfiguration.init(ssidPrefix: ssid)
             hotspotConfig.joinOnce = !saveNetwork;
             return self.execConnect(hotspotConfig: hotspotConfig, resolve: resolve);
         }
+        
     }
     
     @objc public func secureConnect(ssid: String, password: String, saveNetwork: Bool, isWep: Bool, resolve: @escaping (PluginResultData) -> Void, reject: @escaping (_ message: String, _ code: String? , _ error: Error? , _ data: PluginResultData? ) -> Void) -> Void {
@@ -217,37 +236,42 @@ public typealias PluginResultData = [String: Any]
             let hotspotConfig = NEHotspotConfiguration.init(ssidPrefix: ssid, passphrase: password, isWEP: isWep)
             hotspotConfig.joinOnce = !saveNetwork;
             return self.execConnect(hotspotConfig: hotspotConfig, resolve: resolve);
-        }   
-    }
-    
-    private func execConnect(hotspotConfig: NEHotspotConfiguration, resolve: @escaping (PluginResultData) -> Void) -> Void {
-        NEHotspotConfigurationManager.shared.apply(hotspotConfig) { [weak self] (error) in
-            
-            if let error = error as NSError? {
-                switch(error.code) {
-                case NEHotspotConfigurationError.alreadyAssociated.rawValue:
-                    resolve(["value": 0]); // success
-                    break
-                case NEHotspotConfigurationError.userDenied.rawValue:
-                    resolve(["value": -1]); // button deny
-                    break
-                default:
-                    resolve(["value": -2]); // no connection
-                    break
-                }
-                return
-            }
-            guard let this = self else {
-                resolve(["value": -3]);
-                return
-            }
-            
-            if let currentSsid = this._getSSID(), currentSsid.hasPrefix(hotspotConfig.ssid){
-                resolve(["value": 0]);
-                return;
-            }
-            resolve(["value": -4]);
         }
     }
     
+    private func execConnect(hotspotConfig: NEHotspotConfiguration, resolve: @escaping (PluginResultData) -> Void) -> Void {
+        runIsWifiBlock {value in
+            if(value){
+                NEHotspotConfigurationManager.shared.apply(hotspotConfig) { [weak self] (error) in
+                    if let error = error as NSError? {
+                        switch(error.code) {
+                        case NEHotspotConfigurationError.alreadyAssociated.rawValue:
+                            resolve(["value": 0]); // success
+                            break
+                        case NEHotspotConfigurationError.userDenied.rawValue:
+                            resolve(["value": -1]); // button deny
+                            break
+                        default:
+                            resolve(["value": -2]); // no connection
+                            break
+                        }
+                        return
+                    }
+                    guard let this = self else {
+                        resolve(["value": -3]);
+                        return
+                    }
+                    
+                    if let currentSsid = this._getSSID(), currentSsid.hasPrefix(hotspotConfig.ssid){
+                        resolve(["value": 0]);
+                        return;
+                    }
+                    resolve(["value": -4]);
+                }
+            } else {
+                resolve(["value": -4]);
+            }
+        }
+        
+    }
 }

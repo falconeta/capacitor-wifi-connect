@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.location.LocationManager
 import android.net.*
+import android.net.ConnectivityManager.NetworkCallback
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
 import android.net.wifi.WifiNetworkSpecifier
@@ -22,11 +23,35 @@ import androidx.lifecycle.LifecycleObserver
 import com.getcapacitor.JSObject
 import com.getcapacitor.PluginCall
 
-class CapacitorWifiConnect(context: Context) : LifecycleObserver {
 
+class CapacitorWifiConnect : LifecycleObserver {
+  
+  private lateinit var _context: Context;
+  private var isWifiConnected = false;
 
-  //  private lateinit var channel: MethodChannel
-  private var _context = context;
+  constructor(context: Context)  {
+    _context = context;
+    val nr = NetworkRequest.Builder()
+      .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+      .build()
+
+    val networkCallback: NetworkCallback = object : NetworkCallback() {
+      override fun onAvailable(network: Network) {
+        super.onAvailable(network);
+        isWifiConnected = true;
+      }
+
+      override fun onLost(network: Network) {
+        super.onLost(network)
+        isWifiConnected = false;
+      }
+    }
+
+    connectivityManager.registerNetworkCallback(
+      nr,
+      networkCallback);
+  }
+
 
   // holds the call while connected using ConnectivityManager.requestNetwork API
   private var networkCallback: ConnectivityManager.NetworkCallback? = null
@@ -68,7 +93,7 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
       call.resolve(ret)
       return
     }
-    
+
     _call = call;
     when {
       Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
@@ -98,7 +123,14 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
       call.resolve(ret)
       return
     }
-    
+
+    if(!isWifiConnected){
+      val ret = JSObject()
+      ret.put("value", -4);
+      call.resolve(ret)
+      return
+    }
+
     _call = call;
     ssid.let {
       when {
@@ -122,7 +154,7 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
     @NonNull ssid: String,
     @NonNull call: PluginCall
   ) {
-    
+
     val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     if(!networkEnabled) {
       val ret = JSObject()
@@ -131,7 +163,14 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
       return
     }
 
-    _call = call;
+    if(!isWifiConnected){
+      val ret = JSObject()
+      ret.put("value", -4);
+      call.resolve(ret)
+      return
+    }
+
+      _call = call;
     ssid.let {
       when {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
@@ -157,7 +196,7 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
     @NonNull isWep: Boolean,
     @NonNull call: PluginCall
   ) {
-    
+
     val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     if(!networkEnabled) {
       val ret = JSObject()
@@ -165,7 +204,14 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
       call.resolve(ret)
       return
     }
-    
+
+    if(!isWifiConnected){
+      val ret = JSObject()
+      ret.put("value", -4);
+      call.resolve(ret)
+      return
+    }
+
     _call = call;
     if (isWep || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
       val wifiConfig = isWep.let {
@@ -199,7 +245,7 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
     @NonNull isWep: Boolean,
     @NonNull call: PluginCall
   ) {
-    
+
     val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     if(!networkEnabled) {
       val ret = JSObject()
@@ -207,7 +253,14 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
       call.resolve(ret)
       return
     }
-    
+
+    if(!isWifiConnected){
+      val ret = JSObject()
+      ret.put("value", -4);
+      call.resolve(ret)
+      return
+    }
+
     _call = call;
     if (ssid == null || password == null || isWep == null) {
       return
