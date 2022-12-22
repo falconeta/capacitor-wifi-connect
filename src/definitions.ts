@@ -4,6 +4,7 @@ export interface CapacitorWifiConnectPlugin {
   requestPermission(): Promise<{ value: PermissionState }>;
   disconnect(): Promise<{ value: boolean }>;
 
+  getSSIDs(): Promise<string[]>
   getSSID(): Promise<{ value: string }>;
 
   connect(options: {

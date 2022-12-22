@@ -38,6 +38,7 @@ For functionality, you need to note the following:
 * [`checkPermission()`](#checkpermission)
 * [`requestPermission()`](#requestpermission)
 * [`disconnect()`](#disconnect)
+* [`getSSIDs()`](#getssids)
 * [`getSSID()`](#getssid)
 * [`connect(...)`](#connect)
 * [`prefixConnect(...)`](#prefixconnect)
@@ -80,6 +81,17 @@ disconnect() => Promise<{ value: boolean; }>
 ```
 
 **Returns:** <code>Promise&lt;{ value: boolean; }&gt;</code>
+
+--------------------
+
+
+### getSSIDs()
+
+```typescript
+getSSIDs() => Promise<string[]>
+```
+
+**Returns:** <code>Promise&lt;string[]&gt;</code>
 
 --------------------
 

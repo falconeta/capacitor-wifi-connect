@@ -20,6 +20,7 @@ import android.util.Log
 import androidx.annotation.NonNull
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LifecycleObserver
+import com.getcapacitor.JSArray
 import com.getcapacitor.JSObject
 import com.getcapacitor.PluginCall
 
@@ -291,6 +292,47 @@ class CapacitorWifiConnect : LifecycleObserver {
       .build()
     execConnect(specifier)
     return
+  }
+
+  fun getSSIDs(call: PluginCall) {
+    val wifiScanReceiver = object : BroadcastReceiver() {
+      override fun onReceive(context: Context, intent: Intent) {
+        val success = intent.getBooleanExtra(WifiManager.EXTRA_RESULTS_UPDATED, false)
+
+        if (success) {
+          val ssids = wifiManager.scanResults
+            .map { result -> result.SSID }
+            .filter { ssid -> ssid !== "" }
+
+          val jsArray = JSArray()
+          for (ssid in ssids)
+            jsArray.put(ssid)
+
+          val jsObject = JSObject()
+          jsObject.put("value", jsArray)
+          _call?.resolve(jsObject)
+          _call = null
+        } else {
+          val ret = JSObject()
+          ret.put("value", -1);
+          _call?.resolve(ret);
+          _call = null;
+        }
+
+        context.unregisterReceiver(this)
+      }
+    }
+
+    val intentFilter = IntentFilter()
+    intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
+    _context.registerReceiver(wifiScanReceiver, intentFilter)
+
+    val success = wifiManager.startScan()
+    if (!success) {
+      _call?.reject("error on startScan");
+      _call = null;
+      _context.unregisterReceiver(wifiScanReceiver)
+    }
   }
 
   @SuppressLint("MissingPermission")
