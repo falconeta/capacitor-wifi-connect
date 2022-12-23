@@ -30,7 +30,7 @@ class CapacitorWifiConnect : LifecycleObserver {
   private lateinit var _context: Context;
   private var isWifiConnected = false;
 
-  constructor(context: Context)  {
+  constructor(context: Context) {
     _context = context;
     val nr = NetworkRequest.Builder()
       .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
@@ -50,7 +50,8 @@ class CapacitorWifiConnect : LifecycleObserver {
 
     connectivityManager.registerNetworkCallback(
       nr,
-      networkCallback);
+      networkCallback
+    );
   }
 
 
@@ -88,7 +89,7 @@ class CapacitorWifiConnect : LifecycleObserver {
   ) {
 
     val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-    if(!networkEnabled) {
+    if (!networkEnabled) {
       val ret = JSObject()
       ret.put("value", -6);
       call.resolve(ret)
@@ -118,14 +119,14 @@ class CapacitorWifiConnect : LifecycleObserver {
   ) {
 
     val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-    if(!networkEnabled) {
+    if (!networkEnabled) {
       val ret = JSObject()
       ret.put("value", -6);
       call.resolve(ret)
       return
     }
 
-    if(!isWifiConnected){
+    if (!isWifiConnected) {
       val ret = JSObject()
       ret.put("value", -4);
       call.resolve(ret)
@@ -157,21 +158,21 @@ class CapacitorWifiConnect : LifecycleObserver {
   ) {
 
     val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-    if(!networkEnabled) {
+    if (!networkEnabled) {
       val ret = JSObject()
       ret.put("value", -6);
       call.resolve(ret)
       return
     }
 
-    if(!isWifiConnected){
+    if (!isWifiConnected) {
       val ret = JSObject()
       ret.put("value", -4);
       call.resolve(ret)
       return
     }
 
-      _call = call;
+    _call = call;
     ssid.let {
       when {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
@@ -199,14 +200,14 @@ class CapacitorWifiConnect : LifecycleObserver {
   ) {
 
     val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-    if(!networkEnabled) {
+    if (!networkEnabled) {
       val ret = JSObject()
       ret.put("value", -6);
       call.resolve(ret)
       return
     }
 
-    if(!isWifiConnected){
+    if (!isWifiConnected) {
       val ret = JSObject()
       ret.put("value", -4);
       call.resolve(ret)
@@ -248,14 +249,14 @@ class CapacitorWifiConnect : LifecycleObserver {
   ) {
 
     val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-    if(!networkEnabled) {
+    if (!networkEnabled) {
       val ret = JSObject()
       ret.put("value", -6);
       call.resolve(ret)
       return
     }
 
-    if(!isWifiConnected){
+    if (!isWifiConnected) {
       val ret = JSObject()
       ret.put("value", -4);
       call.resolve(ret)
@@ -303,6 +304,8 @@ class CapacitorWifiConnect : LifecycleObserver {
           val ssids = wifiManager.scanResults
             .map { result -> result.SSID }
             .filter { ssid -> ssid !== "" }
+            .distinct();
+
 
           val jsArray = JSArray()
           for (ssid in ssids)
@@ -347,18 +350,18 @@ class CapacitorWifiConnect : LifecycleObserver {
         if (success) {
           val ssid = getNearbySsid(ssidPrefix)
           when {
-          ssid != null -> {
-            execConnect(config.apply {
-              SSID = "\"" + ssid + "\""
-            })
+            ssid != null -> {
+              execConnect(config.apply {
+                SSID = "\"" + ssid + "\""
+              })
+            }
+            else -> {
+              val ret = JSObject()
+              ret.put("value", -2);
+              _call?.let { it.resolve(ret) };
+              _call = null;
+            }
           }
-          else -> {
-            val ret = JSObject()
-            ret.put("value", -2);
-            _call?.let { it.resolve(ret) };
-            _call = null;
-          }
-        }
         } else {
           val ret = JSObject()
           ret.put("value", -1);
@@ -377,7 +380,7 @@ class CapacitorWifiConnect : LifecycleObserver {
     if (!success) {
       _call?.let { it.reject("error on startScan") };
       _call = null;
-     _context?.unregisterReceiver(wifiScanReceiver)
+      _context?.unregisterReceiver(wifiScanReceiver)
     }
   }
 

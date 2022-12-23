@@ -5,13 +5,13 @@ import com.getcapacitor.*
 import com.getcapacitor.annotation.CapacitorPlugin
 import com.getcapacitor.annotation.Permission
 import com.getcapacitor.annotation.PermissionCallback
-import kotlin.coroutines.suspendCoroutine
 
 
 private const val PERMISSION_ACCESS_FINE_LOCATION = "access-fine-location";
 private const val PERMISSION_ACCESS_COARSE_LOCATION = "access-coarse-location";
 private const val PERMISSION_ACCESS_WIFI_STATE = "access-wifi-state";
 private const val PERMISSION_CHANGE_WIFI_STATE = "change-wifi-state";
+private const val PERMISSION_ACCESS_NETWORK_STATE = "access-network-state";
 private const val PERMISSION_CHANGE_NETWORK_STATE = "change-network-state";
 
 
@@ -33,6 +33,10 @@ private const val PERMISSION_CHANGE_NETWORK_STATE = "change-network-state";
     Permission(
       alias = PERMISSION_CHANGE_WIFI_STATE,
       strings = [Manifest.permission.CHANGE_WIFI_STATE]
+    ),
+    Permission(
+      alias = PERMISSION_ACCESS_NETWORK_STATE,
+      strings = [Manifest.permission.ACCESS_NETWORK_STATE]
     ),
     Permission(
       alias = PERMISSION_CHANGE_NETWORK_STATE,
@@ -288,6 +292,14 @@ class CapacitorWifiConnectPlugin : Plugin() {
       );
     }
 
+    if (getPermissionState(PERMISSION_ACCESS_NETWORK_STATE) != PermissionState.GRANTED) {
+      return requestPermissionForAlias(
+        PERMISSION_ACCESS_NETWORK_STATE,
+        call,
+        callbackName
+      );
+    }
+
     if (getPermissionState(PERMISSION_CHANGE_NETWORK_STATE) != PermissionState.GRANTED) {
       return requestPermissionForAlias(
         PERMISSION_CHANGE_NETWORK_STATE,
@@ -302,6 +314,7 @@ class CapacitorWifiConnectPlugin : Plugin() {
     return getPermissionState(PERMISSION_ACCESS_FINE_LOCATION) == PermissionState.GRANTED &&
       getPermissionState(PERMISSION_ACCESS_WIFI_STATE) == PermissionState.GRANTED &&
       getPermissionState(PERMISSION_CHANGE_WIFI_STATE) == PermissionState.GRANTED &&
+      getPermissionState(PERMISSION_ACCESS_NETWORK_STATE) == PermissionState.GRANTED &&
       getPermissionState(PERMISSION_CHANGE_NETWORK_STATE) == PermissionState.GRANTED;
   }
 
@@ -309,6 +322,7 @@ class CapacitorWifiConnectPlugin : Plugin() {
     return getPermissionState(PERMISSION_ACCESS_FINE_LOCATION) == PermissionState.PROMPT ||
       getPermissionState(PERMISSION_ACCESS_WIFI_STATE) == PermissionState.PROMPT ||
       getPermissionState(PERMISSION_CHANGE_WIFI_STATE) == PermissionState.PROMPT ||
+      getPermissionState(PERMISSION_ACCESS_NETWORK_STATE) == PermissionState.PROMPT ||
       getPermissionState(PERMISSION_CHANGE_NETWORK_STATE) == PermissionState.PROMPT;
   }
 
