@@ -26,7 +26,7 @@ import com.getcapacitor.PluginCall
 
 
 class CapacitorWifiConnect : LifecycleObserver {
-  
+
   private lateinit var _context: Context;
   private var isWifiConnected = false;
 
@@ -322,7 +322,7 @@ class CapacitorWifiConnect : LifecycleObserver {
         context.unregisterReceiver(this)
       }
     }
-
+    _call = call;
     val intentFilter = IntentFilter()
     intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
     _context.registerReceiver(wifiScanReceiver, intentFilter)
