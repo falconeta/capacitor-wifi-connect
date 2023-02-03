@@ -89,10 +89,10 @@ disconnect() => Promise<{ value: boolean; }>
 ### getSSIDs()
 
 ```typescript
-getSSIDs() => Promise<string[]>
+getSSIDs() => Promise<{ value: string[]; }>
 ```
 
-**Returns:** <code>Promise&lt;string[]&gt;</code>
+**Returns:** <code>Promise&lt;{ value: string[]; }&gt;</code>
 
 --------------------
 

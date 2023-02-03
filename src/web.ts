@@ -20,7 +20,7 @@ export class CapacitorWifiConnectPluginWeb
   getSSID(): Promise<{ value: string }> {
     throw new Error('Method not implemented.');
   }
-  getSSIDs(): Promise<string[]> {
+  getSSIDs(): Promise<{ value: string[] }> {
     throw new Error('Method not implemented.');
   }
   connect(options: {
