@@ -20,18 +20,6 @@ For functionality, you need to note the following:
 
 * Will ensure 'HotspotConfiguration' and 'Wifi Information' capabilities are added to your xCode project
 
-# Android Functions
-
-* ensure that the following permissions is configured in AndroidManifest.xml:
-`
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-`
-
 ## API
 
 <docgen-index>
