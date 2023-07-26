@@ -113,23 +113,49 @@ class CapacitorWifiConnectPlugin : Plugin() {
   }
 
   @PluginMethod
-  fun getSSID(call: PluginCall) {
+  fun getAppSSID(call: PluginCall) {
     if (!isPermissionGranted()) {
-      checkPermission(call, "getSSIDCallback");
+      checkPermission(call, "getAppSSIDCallback");
       return;
     }
     val ret = JSObject()
-    ret.put("value", implementation.getSSID())
+    ret.put("value", implementation.getAppSSID())
+    ret.put("status", 0)
+    call.resolve(ret)
+  }
+
+  @PluginMethod
+  fun getDeviceSSID(call: PluginCall) {
+    if (!isPermissionGranted()) {
+      checkPermission(call, "getDeviceSSIDCallback");
+      return;
+    }
+    val ret = JSObject()
+    ret.put("value", implementation.getDeviceSSID())
+    ret.put("status", 0)
     call.resolve(ret)
   }
 
   @PermissionCallback
-  private fun getSSIDCallback(call: PluginCall) {
+  private fun getAppSSIDCallback(call: PluginCall) {
     if (isPermissionGranted()) {
-      getSSID(call);
+      getAppSSID(call);
     } else {
       val ret = JSObject()
-      ret.put("value", -5);
+      ret.put("value", "");
+      ret.put("status", -5);
+      call.resolve(ret)
+    }
+  }
+
+  @PermissionCallback
+  private fun getDeviceSSIDCallback(call: PluginCall) {
+    if (isPermissionGranted()) {
+      getDeviceSSID(call);
+    } else {
+      val ret = JSObject()
+      ret.put("value", "");
+      ret.put("status", -5);
       call.resolve(ret)
     }
   }

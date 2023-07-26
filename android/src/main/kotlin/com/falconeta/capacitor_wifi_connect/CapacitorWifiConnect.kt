@@ -82,7 +82,10 @@ class CapacitorWifiConnect : LifecycleObserver {
   }
 
   @SuppressLint("MissingPermission")
-  fun getSSID(): String = wifiManager.connectionInfo.ssid
+  fun getAppSSID(): String = wifiManager.connectionInfo.ssid
+
+  @SuppressLint("MissingPermission")
+  fun getDeviceSSID(): String = wifiManager.connectionInfo.ssid
 
   fun disconnect(
     @NonNull call: PluginCall
@@ -459,7 +462,7 @@ class CapacitorWifiConnect : LifecycleObserver {
         count++;
         val info = intent.getParcelableExtra<NetworkInfo>(WifiManager.EXTRA_NETWORK_INFO)
         if (info != null && info.isConnected) {
-          if (info.extraInfo == wifiConfiguration.SSID || getSSID() == wifiConfiguration.SSID) {
+          if (info.extraInfo == wifiConfiguration.SSID || getAppSSID() == wifiConfiguration.SSID) {
             val ret = JSObject()
             ret.put("value", 0);
             _call?.let { it.resolve(ret) };

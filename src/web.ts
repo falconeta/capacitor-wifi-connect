@@ -1,6 +1,6 @@
 import { WebPlugin, PermissionState } from '@capacitor/core';
 
-import type { CapacitorWifiConnectPlugin } from './definitions';
+import type { CapacitorWifiConnectPlugin, ConnectState } from './definitions';
 
 export class CapacitorWifiConnectPluginWeb
   extends WebPlugin
@@ -17,9 +17,14 @@ export class CapacitorWifiConnectPluginWeb
   disconnect(): Promise<{ value: boolean }> {
     throw new Error('Method not implemented.');
   }
-  getSSID(): Promise<{ value: string }> {
+
+  getAppSSID(): Promise<{ value: string, status: ConnectState }> {
     throw new Error('Method not implemented.');
   }
+  getDeviceSSID(): Promise<{ value: string, status: ConnectState }> {
+    throw new Error('Method not implemented.');
+  }
+  
   getSSIDs(): Promise<{ value: string[] }> {
     throw new Error('Method not implemented.');
   }

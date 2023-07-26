@@ -150,16 +150,36 @@ public typealias PluginResultData = [String: Any]
     }
     
     
-    @objc public func getSSID(resolve: @escaping (PluginResultData) -> Void, reject: @escaping (_ message: String, _ code: String? , _ error: Error? , _ data: PluginResultData? ) -> Void) -> Void {
+    @objc public func getAppSSID(resolve: @escaping (PluginResultData) -> Void, reject: @escaping (_ message: String, _ code: String? , _ error: Error? , _ data: PluginResultData? ) -> Void) -> Void {
+        
+        if (self.status != .notDetermined && self.status != .authorizedAlways && self.status != .authorizedWhenInUse) {
+            return resolve(["value": "", "status": -5])
+        }
+                
+        self.resolve = resolve;
+        
+        runLocationBlock {
+            resolve(["value": self._getSSID() ?? "", "status": 0])
+        }
+    }
+    
+    @available(iOS 14.0, *)
+    @objc public func getDeviceSSID(resolve: @escaping (PluginResultData) -> Void, reject: @escaping (_ message: String, _ code: String? , _ error: Error? , _ data: PluginResultData? ) -> Void) -> Void {
         
         if(self.status != .notDetermined && self.status != .authorizedAlways && self.status != .authorizedWhenInUse) {
-            return resolve(["value": -5])
+            return resolve(["value": "", "status": -5])
         }
         
         self.resolve = resolve;
         
         runLocationBlock {
-            resolve(["value": self._getSSID() ?? ""])
+            NEHotspotNetwork.fetchCurrent(){ currentNetwork in
+                if (currentNetwork == nil) {
+                    return resolve(["value": "", "status": -3])
+                }
+                resolve(["value": currentNetwork?.ssid, "status": 0])
+            }
+           
         }
     }
     

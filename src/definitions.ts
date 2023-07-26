@@ -5,7 +5,21 @@ export interface CapacitorWifiConnectPlugin {
   disconnect(): Promise<{ value: boolean }>;
 
   getSSIDs(): Promise<{ value: string[] }>
-  getSSID(): Promise<{ value: string }>;
+
+    /** 
+   *
+   * returns the current SSID connected by Application
+   * @since 5.1.0
+   */
+  getAppSSID(): Promise<{ value: string, status: ConnectState }>;
+
+  /**
+   * iOS >= 14, Android >=9: 
+   *
+   * returns the current SSID connected by device
+   * @since 5.1.0
+   */
+  getDeviceSSID(): Promise<{ value: string, status: ConnectState }>;
 
   connect(options: {
     ssid: string;

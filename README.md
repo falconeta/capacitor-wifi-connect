@@ -28,7 +28,8 @@ For functionality, you need to note the following:
 * [`requestPermission()`](#requestpermission)
 * [`disconnect()`](#disconnect)
 * [`getSSIDs()`](#getssids)
-* [`getSSID()`](#getssid)
+* [`getAppSSID()`](#getappssid)
+* [`getDeviceSSID()`](#getdevicessid)
 * [`connect(...)`](#connect)
 * [`prefixConnect(...)`](#prefixconnect)
 * [`secureConnect(...)`](#secureconnect)
@@ -85,13 +86,34 @@ getSSIDs() => Promise<{ value: string[]; }>
 --------------------
 
 
-### getSSID()
+### getAppSSID()
 
 ```typescript
-getSSID() => Promise<{ value: string; }>
+getAppSSID() => Promise<{ value: string; status: ConnectState; }>
 ```
 
-**Returns:** <code>Promise&lt;{ value: string; }&gt;</code>
+returns the current SSID connected by Application
+
+**Returns:** <code>Promise&lt;{ value: string; status: <a href="#connectstate">ConnectState</a>; }&gt;</code>
+
+**Since:** 5.1.0
+
+--------------------
+
+
+### getDeviceSSID()
+
+```typescript
+getDeviceSSID() => Promise<{ value: string; status: ConnectState; }>
+```
+
+iOS &gt;= 14, Android &gt;=9: 
+
+returns the current SSID connected by device
+
+**Returns:** <code>Promise&lt;{ value: string; status: <a href="#connectstate">ConnectState</a>; }&gt;</code>
+
+**Since:** 5.1.0
 
 --------------------
 

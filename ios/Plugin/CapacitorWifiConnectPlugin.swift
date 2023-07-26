@@ -21,8 +21,13 @@ public class CapacitorWifiConnectPlugin: CAPPlugin {
         implementation.disconnect(resolve: call.resolve, reject: call.reject);
     }
     
-    @objc func getSSID(_ call: CAPPluginCall) {
-        implementation.getSSID(resolve: call.resolve, reject: call.reject);
+    @objc func getAppSSID(_ call: CAPPluginCall) {
+        implementation.getAppSSID(resolve: call.resolve, reject: call.reject);
+    }
+    
+    @available(iOS 14.0, *)
+    @objc func getDeviceSSID(_ call: CAPPluginCall) {
+        implementation.getDeviceSSID(resolve: call.resolve, reject: call.reject);
     }
     
     @objc func connect(_ call: CAPPluginCall) {
