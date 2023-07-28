@@ -82,10 +82,10 @@ class CapacitorWifiConnect : LifecycleObserver {
   }
 
   @SuppressLint("MissingPermission")
-  fun getAppSSID(): String = wifiManager.connectionInfo.ssid
+  fun getAppSSID(): String = wifiManager.connectionInfo.ssid.removeSurrounding("\"")
 
   @SuppressLint("MissingPermission")
-  fun getDeviceSSID(): String = wifiManager.connectionInfo.ssid
+  fun getDeviceSSID(): String = wifiManager.connectionInfo.ssid.removeSurrounding("\"")
 
   fun disconnect(
     @NonNull call: PluginCall
