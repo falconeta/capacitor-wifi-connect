@@ -78,10 +78,16 @@ disconnect() => Promise<{ value: boolean; }>
 ### getSSIDs()
 
 ```typescript
-getSSIDs() => Promise<{ value: string[]; }>
+getSSIDs() => Promise<{ value: string[]; status: ConnectState; }>
 ```
 
-**Returns:** <code>Promise&lt;{ value: string[]; }&gt;</code>
+ONLY ANDROID
+returns the current SSID connected by Application
+WARNING: app is restricted to 4 scans every 2 minutes
+
+**Returns:** <code>Promise&lt;{ value: string[]; status: <a href="#connectstate">ConnectState</a>; }&gt;</code>
+
+**Since:** 5.1.0
 
 --------------------
 

@@ -4,7 +4,13 @@ export interface CapacitorWifiConnectPlugin {
   requestPermission(): Promise<{ value: PermissionState }>;
   disconnect(): Promise<{ value: boolean }>;
 
-  getSSIDs(): Promise<{ value: string[] }>
+  /** 
+   * ONLY ANDROID
+   * returns the current SSID connected by Application
+   * WARNING: app is restricted to 4 scans every 2 minutes
+   * @since 5.1.0
+   */
+  getSSIDs(): Promise<{ value: string[], status: ConnectState }>
 
     /** 
    *

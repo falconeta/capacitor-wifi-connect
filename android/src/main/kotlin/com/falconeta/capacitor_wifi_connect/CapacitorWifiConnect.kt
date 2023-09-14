@@ -29,6 +29,7 @@ class CapacitorWifiConnect : LifecycleObserver {
 
   private lateinit var _context: Context;
   private var isWifiConnected = false;
+  private val TAG = "CapacitorWifiConnect"
 
   constructor(context: Context) {
     _context = context;
@@ -302,43 +303,42 @@ class CapacitorWifiConnect : LifecycleObserver {
     val wifiScanReceiver = object : BroadcastReceiver() {
       override fun onReceive(context: Context, intent: Intent) {
         val success = intent.getBooleanExtra(WifiManager.EXTRA_RESULTS_UPDATED, false)
-
+        val jsArray = JSArray()
+        val jsObject = JSObject()
         if (success) {
           val ssids = wifiManager.scanResults
             .map { result -> result.SSID }
             .filter { ssid -> ssid !== "" }
             .distinct();
 
-
-          val jsArray = JSArray()
           for (ssid in ssids)
             jsArray.put(ssid)
 
-          val jsObject = JSObject()
-          jsObject.put("value", jsArray)
-          _call?.resolve(jsObject)
-          _call = null
+          jsObject.put("status", 0)
         } else {
-          val ret = JSObject()
-          ret.put("value", -1);
-          _call?.resolve(ret);
-          _call = null;
+          jsObject.put("status", -2);
         }
 
+        jsObject.put("value", jsArray)
+        call.resolve(jsObject);
+
         context.unregisterReceiver(this)
+
       }
     }
-    _call = call;
+    if(!wifiManager.isWifiEnabled) {
+      val ret = JSObject()
+      val jsArray = JSArray()
+      ret.put("value", jsArray)
+      ret.put("status", -4);
+      call.resolve(ret);
+      return;
+    }
     val intentFilter = IntentFilter()
     intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
     _context.registerReceiver(wifiScanReceiver, intentFilter)
 
-    val success = wifiManager.startScan()
-    if (!success) {
-      _call?.reject("error on startScan");
-      _call = null;
-      _context.unregisterReceiver(wifiScanReceiver)
-    }
+    wifiManager.startScan()
   }
 
   @SuppressLint("MissingPermission")
