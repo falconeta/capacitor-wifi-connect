@@ -16,8 +16,6 @@ import android.os.Handler
 import android.os.Looper
 import android.os.PatternMatcher
 import android.os.PatternMatcher.PATTERN_PREFIX
-import android.util.Log
-import androidx.annotation.NonNull
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.LifecycleObserver
 import com.getcapacitor.JSArray
@@ -25,39 +23,14 @@ import com.getcapacitor.JSObject
 import com.getcapacitor.PluginCall
 
 
-class CapacitorWifiConnect : LifecycleObserver {
+class CapacitorWifiConnect(context: Context) : LifecycleObserver {
 
-  private lateinit var _context: Context;
-  private var isWifiConnected = false;
-  private val TAG = "CapacitorWifiConnect"
-
-  constructor(context: Context) {
-    _context = context;
-    val nr = NetworkRequest.Builder()
-      .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-      .build()
-
-    val networkCallback: NetworkCallback = object : NetworkCallback() {
-      override fun onAvailable(network: Network) {
-        super.onAvailable(network);
-        isWifiConnected = true;
-      }
-
-      override fun onLost(network: Network) {
-        super.onLost(network)
-        isWifiConnected = false;
-      }
-    }
-
-    connectivityManager.registerNetworkCallback(
-      nr,
-      networkCallback
-    );
-  }
+  private var _context: Context = context
+//  private val TAG = "CapacitorWifiConnect"
 
 
   // holds the call while connected using ConnectivityManager.requestNetwork API
-  private var networkCallback: ConnectivityManager.NetworkCallback? = null
+  private var networkCallback: NetworkCallback? = null
 
   // holds the network id returned by WifiManager.addNetwork, required to disconnect (API < 29)
   private var networkId: Int? = null
@@ -71,112 +44,99 @@ class CapacitorWifiConnect : LifecycleObserver {
   }
 
   private val wifiManager: WifiManager by lazy(LazyThreadSafetyMode.NONE) {
-    _context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+    _context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
   }
 
-  private var _call: PluginCall? = null;
-
-
-  fun echo(value: String): String {
-    Log.i("Echo", value)
-    return value
-  }
-
-  @SuppressLint("MissingPermission")
   fun getAppSSID(): String = wifiManager.connectionInfo.ssid.removeSurrounding("\"")
 
   @SuppressLint("MissingPermission")
   fun getDeviceSSID(): String = wifiManager.connectionInfo.ssid.removeSurrounding("\"")
 
   fun disconnect(
-    @NonNull call: PluginCall
+    call: PluginCall
   ) {
 
     val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     if (!networkEnabled) {
       val ret = JSObject()
-      ret.put("value", -6);
+      ret.put("value", -6)
       call.resolve(ret)
       return
     }
 
-    _call = call;
     when {
       Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
         val ret = JSObject()
-        ret.put("value", execDisconnect());
-        _call?.let { it.resolve(ret) };
-        _call = null;
+        ret.put("value", execDisconnect())
+        call.resolve(ret)
         return
       }
       else -> {
-        execDisconnectLegacy()
+        execDisconnectLegacy(call)
         return
       }
     }
-    return
   }
 
   fun connect(
-    @NonNull ssid: String,
-    @NonNull call: PluginCall
+    ssid: String,
+    call: PluginCall
   ) {
 
     val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     if (!networkEnabled) {
       val ret = JSObject()
-      ret.put("value", -6);
+      ret.put("value", -6)
       call.resolve(ret)
       return
     }
 
-    if (!isWifiConnected) {
+    if(!wifiManager.isWifiEnabled) {
       val ret = JSObject()
-      ret.put("value", -4);
+      ret.put("value", -4)
       call.resolve(ret)
       return
     }
 
-    _call = call;
     ssid.let {
       when {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
           val specifier = WifiNetworkSpecifier.Builder()
             .setSsid(it)
             .build()
-          execConnect(specifier)
+          execConnect(specifier, call)
           return
         }
         else -> {
           val wifiConfig = createWifiConfig(it)
-          execConnect(wifiConfig)
+          execConnect(wifiConfig, call)
           return
         }
       }
     }
   }
 
+  @RequiresApi(Build.VERSION_CODES.M)
   fun prefixConnect(
-    @NonNull ssid: String,
-    @NonNull call: PluginCall
+    ssid: String,
+    call: PluginCall
   ) {
 
     val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     if (!networkEnabled) {
       val ret = JSObject()
-      ret.put("value", -6);
+      ret.put("value", -6)
       call.resolve(ret)
       return
     }
 
-    if (!isWifiConnected) {
+    if(!wifiManager.isWifiEnabled) {
       val ret = JSObject()
-      ret.put("value", -4);
+      ret.put("value", -4)
       call.resolve(ret)
       return
     }
 
-    _call = call;
     ssid.let {
       when {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
@@ -184,12 +144,12 @@ class CapacitorWifiConnect : LifecycleObserver {
             // .setBssidPattern(MacAddress.fromString("7c:df:a1:00:00:00"), MacAddress.fromString("ff:ff:ff:00:00:00"))
             .setSsidPattern(PatternMatcher(it, PATTERN_PREFIX))
             .build()
-          execConnect(specifier)
+          execConnect(specifier, call)
           return
         }
         else -> {
           val wifiConfig = createWifiConfig(it)
-          connectByPrefix(it, wifiConfig)
+          connectByPrefix(it, wifiConfig, call)
           return
         }
       }
@@ -197,28 +157,28 @@ class CapacitorWifiConnect : LifecycleObserver {
   }
 
   fun secureConnect(
-    @NonNull ssid: String,
-    @NonNull password: String,
-    @NonNull isWep: Boolean,
-    @NonNull call: PluginCall
+    ssid: String,
+    password: String,
+    isWep: Boolean,
+    isWpa3: Boolean,
+    call: PluginCall
   ) {
 
     val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     if (!networkEnabled) {
       val ret = JSObject()
-      ret.put("value", -6);
+      ret.put("value", -6)
       call.resolve(ret)
       return
     }
 
-    if (!isWifiConnected) {
+    if(!wifiManager.isWifiEnabled) {
       val ret = JSObject()
-      ret.put("value", -4);
+      ret.put("value", -4)
       call.resolve(ret)
       return
     }
 
-    _call = call;
     if (isWep || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
       val wifiConfig = isWep.let {
         if (it) {
@@ -227,48 +187,44 @@ class CapacitorWifiConnect : LifecycleObserver {
           createWifiConfig(ssid, password)
         }
       }
-      execConnect(wifiConfig)
+      execConnect(wifiConfig, call)
       return
     }
     val specifier = WifiNetworkSpecifier.Builder()
       .setSsid(ssid)
       .apply {
-//        if (isWpa3 != null && isWpa3) {
-//          setWpa3Passphrase(password)
-//        } else {
+        if (isWpa3) {
+          setWpa3Passphrase(password)
+        } else {
         setWpa2Passphrase(password)
-//        }
+        }
       }
       .build()
-    execConnect(specifier)
+    execConnect(specifier, call)
     return
   }
 
-
+  @RequiresApi(Build.VERSION_CODES.M)
   fun securePrefixConnect(
-    @NonNull ssid: String,
-    @NonNull password: String,
-    @NonNull isWep: Boolean,
-    @NonNull call: PluginCall
+    ssid: String,
+    password: String,
+    isWep: Boolean,
+    isWpa3: Boolean,
+    call: PluginCall
   ) {
 
     val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     if (!networkEnabled) {
       val ret = JSObject()
-      ret.put("value", -6);
+      ret.put("value", -6)
       call.resolve(ret)
       return
     }
 
-    if (!isWifiConnected) {
+    if(!wifiManager.isWifiEnabled) {
       val ret = JSObject()
-      ret.put("value", -4);
+      ret.put("value", -4)
       call.resolve(ret)
-      return
-    }
-
-    _call = call;
-    if (ssid == null || password == null || isWep == null) {
       return
     }
 
@@ -282,23 +238,25 @@ class CapacitorWifiConnect : LifecycleObserver {
         }
       }
 
-      connectByPrefix(ssid, wifiConfig)
+      connectByPrefix(ssid, wifiConfig, call)
       return
     }
     val specifier = WifiNetworkSpecifier.Builder()
       .setSsidPattern(PatternMatcher(ssid, PATTERN_PREFIX))
       .apply {
-//        if (isWpa3 != null && isWpa3) {
-//          setWpa3Passphrase(password)
-//        } else {
+        if (isWpa3) {
+          setWpa3Passphrase(password)
+        } else {
         setWpa2Passphrase(password)
-//        }
+        }
       }
       .build()
-    execConnect(specifier)
+    execConnect(specifier, call)
     return
   }
 
+  @RequiresApi(Build.VERSION_CODES.M)
+  @SuppressLint("MissingPermission")
   fun getSSIDs(call: PluginCall) {
     val wifiScanReceiver = object : BroadcastReceiver() {
       override fun onReceive(context: Context, intent: Intent) {
@@ -309,18 +267,18 @@ class CapacitorWifiConnect : LifecycleObserver {
           val ssids = wifiManager.scanResults
             .map { result -> result.SSID }
             .filter { ssid -> ssid !== "" }
-            .distinct();
+            .distinct()
 
           for (ssid in ssids)
             jsArray.put(ssid)
 
           jsObject.put("status", 0)
         } else {
-          jsObject.put("status", -2);
+          jsObject.put("status", -2)
         }
 
         jsObject.put("value", jsArray)
-        call.resolve(jsObject);
+        call.resolve(jsObject)
 
         context.unregisterReceiver(this)
 
@@ -330,9 +288,9 @@ class CapacitorWifiConnect : LifecycleObserver {
       val ret = JSObject()
       val jsArray = JSArray()
       ret.put("value", jsArray)
-      ret.put("status", -4);
-      call.resolve(ret);
-      return;
+      ret.put("status", -4)
+      call.resolve(ret)
+      return
     }
     val intentFilter = IntentFilter()
     intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
@@ -343,11 +301,14 @@ class CapacitorWifiConnect : LifecycleObserver {
 
   @SuppressLint("MissingPermission")
   @Suppress("DEPRECATION")
+  @RequiresApi(Build.VERSION_CODES.M)
   private fun connectByPrefix(
-    @NonNull ssidPrefix: String,
-    @NonNull config: WifiConfiguration
+    ssidPrefix: String,
+    config: WifiConfiguration,
+    call: PluginCall
   ) {
     val wifiScanReceiver = object : BroadcastReceiver() {
+
       override fun onReceive(context: Context, intent: Intent) {
         val success = intent.getBooleanExtra(WifiManager.EXTRA_RESULTS_UPDATED, false)
         if (success) {
@@ -356,22 +317,20 @@ class CapacitorWifiConnect : LifecycleObserver {
             ssid != null -> {
               execConnect(config.apply {
                 SSID = "\"" + ssid + "\""
-              })
+              }, call)
             }
             else -> {
               val ret = JSObject()
-              ret.put("value", -2);
-              _call?.let { it.resolve(ret) };
-              _call = null;
+              ret.put("value", -1)
+              call.resolve(ret)
             }
           }
         } else {
           val ret = JSObject()
-          ret.put("value", -1);
-          _call?.let { it.resolve(ret) };
-          _call = null;
+          ret.put("value", -2)
+          call.resolve(ret)
         }
-        context?.unregisterReceiver(this)
+        context.unregisterReceiver(this)
       }
     }
 
@@ -379,23 +338,18 @@ class CapacitorWifiConnect : LifecycleObserver {
     intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
     _context.registerReceiver(wifiScanReceiver, intentFilter)
 
-    val success = wifiManager.startScan()
-    if (!success) {
-      _call?.let { it.reject("error on startScan") };
-      _call = null;
-      _context?.unregisterReceiver(wifiScanReceiver)
-    }
+    wifiManager.startScan()
   }
 
   @SuppressLint("MissingPermission")
-  private fun getNearbySsid(@NonNull ssidPrefix: String): String? {
+  private fun getNearbySsid(ssidPrefix: String): String? {
     val results = wifiManager.scanResults
     return results.filter { scanResult -> scanResult.SSID.startsWith(ssidPrefix) }
       .maxByOrNull { scanResult -> scanResult.level }?.SSID
   }
 
   @Suppress("DEPRECATION")
-  private fun createWifiConfig(@NonNull ssid: String): WifiConfiguration {
+  private fun createWifiConfig(ssid: String): WifiConfiguration {
     return WifiConfiguration().apply {
       SSID = "\"" + ssid + "\""
       allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE)
@@ -417,8 +371,8 @@ class CapacitorWifiConnect : LifecycleObserver {
 
   @Suppress("DEPRECATION")
   private fun createWifiConfig(
-    @NonNull ssid: String,
-    @NonNull password: String
+    ssid: String,
+    password: String
   ): WifiConfiguration {
     return createWifiConfig(ssid).apply {
       preSharedKey = "\"" + password + "\""
@@ -430,28 +384,27 @@ class CapacitorWifiConnect : LifecycleObserver {
   }
 
   @Suppress("DEPRECATION")
-  private fun createWEPConfig(@NonNull ssid: String, @NonNull password: String): WifiConfiguration {
+  private fun createWEPConfig(ssid: String, password: String): WifiConfiguration {
     return createWifiConfig(ssid).apply {
       wepKeys[0] = "\"" + password + "\""
       wepTxKeyIndex = 0
 
       allowedGroupCiphers.clear()
-      allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
-      allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
+      allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40)
+      allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104)
 
       allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN)
       allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED)
     }
   }
 
-  @SuppressLint("MissingPermission")
-  private fun execConnect(@NonNull wifiConfiguration: WifiConfiguration) {
+  @Suppress("DEPRECATION")
+  private fun execConnect(wifiConfiguration: WifiConfiguration, call: PluginCall) {
     val network = wifiManager.addNetwork(wifiConfiguration)
     if (network == -1) {
       val ret = JSObject()
-      ret.put("value", -1);
-      _call?.let { it.resolve(ret) };
-      _call = null;
+      ret.put("value", -1)
+      call.resolve(ret)
       return
     }
     wifiManager.saveConfiguration()
@@ -459,22 +412,20 @@ class CapacitorWifiConnect : LifecycleObserver {
     val wifiChangeReceiver = object : BroadcastReceiver() {
       var count = 0
       override fun onReceive(context: Context, intent: Intent) {
-        count++;
+        count++
         val info = intent.getParcelableExtra<NetworkInfo>(WifiManager.EXTRA_NETWORK_INFO)
         if (info != null && info.isConnected) {
-          if (info.extraInfo == wifiConfiguration.SSID || getAppSSID() == wifiConfiguration.SSID) {
+          if ((info.extraInfo == wifiConfiguration.SSID) || (getAppSSID() == wifiConfiguration.SSID)) {
             val ret = JSObject()
-            ret.put("value", 0);
-            _call?.let { it.resolve(ret) };
-            _call = null;
-            context?.unregisterReceiver(this)
+            ret.put("value", 0)
+            call.resolve(ret)
+            context.unregisterReceiver(this)
           } else if (count > 1) {
             // Ignore first callback if not success. It may be for the already connected SSID
             val ret = JSObject()
-            ret.put("value", -1);
-            _call?.let { it.resolve(ret) };
-            _call = null;
-            context?.unregisterReceiver(this)
+            ret.put("value", -1)
+            call.resolve(ret)
+            context.unregisterReceiver(this)
           }
         }
       }
@@ -490,21 +441,19 @@ class CapacitorWifiConnect : LifecycleObserver {
   }
 
   @RequiresApi(Build.VERSION_CODES.Q)
-  private fun execConnect(@NonNull specifier: WifiNetworkSpecifier) {
+  private fun execConnect(specifier: WifiNetworkSpecifier, call: PluginCall) {
     if (!wifiManager.isWifiEnabled) {
-      if (_call != null) {
         val ret = JSObject()
-        ret.put("value", -4);
-        _call?.let { it.resolve(ret) };
-        _call = null;
-      }
-      return;
+        ret.put("value", -4)
+        call.resolve(ret)
+
+      return
     }
 
     if (networkCallback != null) {
       // there was already a connection, unregister to disconnect before proceeding
       connectivityManager.unregisterNetworkCallback(networkCallback!!)
-      networkCallback = null;
+      networkCallback = null
     }
     val request = NetworkRequest.Builder()
       .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
@@ -512,45 +461,31 @@ class CapacitorWifiConnect : LifecycleObserver {
       .setNetworkSpecifier(specifier)
       .build()
 
-    networkCallback = object : ConnectivityManager.NetworkCallback() {
+    networkCallback = object : NetworkCallback() {
       override fun onAvailable(network: Network) {
         super.onAvailable(network)
         connectivityManager.bindProcessToNetwork(network)
-        if (_call != null) {
-          Handler().postDelayed(
+          Handler(Looper.getMainLooper()).postDelayed(
             {
               val ret = JSObject()
-              ret.put("value", 0);
-              _call?.let { it.resolve(ret) };
-              _call = null;
+              ret.put("value", 0)
+              call.resolve(ret)
             },
             100 // value in milliseconds
-          );
-        } else {
-          connectivityManager.unregisterNetworkCallback(this);
-          networkCallback = null;
-        }
-
-        // cannot unregister callback here since it would disconnect form the network
+          )
+        // cannot unregister callback here since it would disconnect from the network
       }
 
       override fun onUnavailable() {
-        super.onUnavailable();
-        if (_call != null) {
-          Handler().postDelayed(
+        super.onUnavailable()
+          Handler(Looper.getMainLooper()).postDelayed(
             {
               val ret = JSObject()
-              ret.put("value", -1);
-              _call?.let { it.resolve(ret) };
-              _call = null;
+              ret.put("value", -1)
+              call.resolve(ret)
             },
             100 // value in milliseconds
-          );
-        } else {
-          connectivityManager.unregisterNetworkCallback(this);
-          networkCallback = null;
-        }
-
+          )
       }
     }
 
@@ -573,24 +508,22 @@ class CapacitorWifiConnect : LifecycleObserver {
 
   @SuppressLint("MissingPermission")
   @Suppress("DEPRECATION")
-  private fun execDisconnectLegacy() {
+  private fun execDisconnectLegacy(call: PluginCall) {
     val network = networkId
     if (network == null) {
       val ret = JSObject()
-      ret.put("value", false);
-      _call?.let { it.resolve(ret) };
-      _call = null;
+      ret.put("value", false)
+      call.resolve(ret)
       return
     }
     val wifiChangeReceiver = object : BroadcastReceiver() {
       override fun onReceive(context: Context, intent: Intent) {
         val info = intent.getParcelableExtra<NetworkInfo>(WifiManager.EXTRA_NETWORK_INFO)
-        if (info != null && !info.isConnected) {
+        if (!(info?.isConnected)!!) {
           val ret = JSObject()
-          ret.put("value", true);
-          _call?.let { it.resolve(ret) };
-          _call = null;
-          context?.unregisterReceiver(this)
+          ret.put("value", true)
+          call.resolve(ret)
+          context.unregisterReceiver(this)
         }
       }
     }

@@ -1,6 +1,7 @@
 package com.falconeta.capacitor_wifi_connect
 
 import android.Manifest
+import android.os.Build
 import com.getcapacitor.*
 import com.getcapacitor.annotation.CapacitorPlugin
 import com.getcapacitor.annotation.Permission
@@ -193,10 +194,16 @@ class CapacitorWifiConnectPlugin : Plugin() {
       return;
     }
     val ssid = call.getString("ssid")
-    if (ssid != null) {
-      implementation.prefixConnect(ssid!!, call);
-    } else {
+
+    if (ssid == null) {
       call.reject("SSID is mandatory")
+      return;
+    }
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      implementation.prefixConnect(ssid, call)
+    } else {
+      call.reject("Android SDK >= 23 compatible")
     }
   }
 
@@ -220,21 +227,12 @@ class CapacitorWifiConnectPlugin : Plugin() {
     val ssid = call.getString("ssid")
     val password = call.getString("password")
     val isWep = call.getBoolean("isWep") ?: false;
+    val isWpa3 = call.getBoolean("isWpa3") ?: false;
     if (ssid != null && password != null) {
-      implementation.secureConnect(ssid!!, password!!, isWep, call);
+      implementation.secureConnect(ssid!!, password!!, isWep, isWpa3, call);
     } else {
       call.reject("SSID and password are mandatory")
     }
-  }
-
-  @PluginMethod
-  fun getSSIDs(call: PluginCall) {
-    if (!isPermissionGranted()) {
-      checkPermission(call, "getSSIDsPermsCallback");
-      return;
-    }
-
-    implementation.getSSIDs(call)
   }
 
   @PermissionCallback
@@ -248,6 +246,21 @@ class CapacitorWifiConnectPlugin : Plugin() {
     }
   }
 
+  @PluginMethod
+  fun getSSIDs(call: PluginCall) {
+    if (!isPermissionGranted()) {
+      checkPermission(call, "getSSIDsPermsCallback");
+      return;
+    }
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      implementation.getSSIDs(call)
+    } else {
+      call.reject("Android SDK >= 23 compatible")
+    }
+
+  }
+
   @PermissionCallback
   private fun getSSIDsPermsCallback(call: PluginCall) {
     if (isPermissionGranted()) {
@@ -259,6 +272,7 @@ class CapacitorWifiConnectPlugin : Plugin() {
     }
   }
 
+  @PluginMethod
   fun securePrefixConnect(call: PluginCall) {
     if (!isPermissionGranted()) {
       checkPermission(call, "securePrefixConnectPermsCallback");
@@ -267,8 +281,9 @@ class CapacitorWifiConnectPlugin : Plugin() {
     val ssid = call.getString("ssid")
     val password = call.getString("password")
     val isWep = call.getBoolean("isWep") ?: false;
+    val isWpa3 = call.getBoolean("isWpa3") ?: false;
     if (ssid != null && password != null) {
-      implementation.secureConnect(ssid!!, password!!, isWep, call);
+      implementation.securePrefixConnect(ssid!!, password!!, isWep, isWpa3, call);
     } else {
       call.reject("SSID and password are mandatory")
     }
