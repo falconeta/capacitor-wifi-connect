@@ -1,6 +1,6 @@
 {
   "name": "@falconeta/capacitor-wifi-connect",
-  "version": "5.1.5",
+  "version": "5.1.6",
   "description": "plugin used for connect the device trhought Wifi also with prefix",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
