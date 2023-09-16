@@ -42,6 +42,7 @@ export interface CapacitorWifiConnectPlugin {
     password: string;
     saveNetwork?: boolean;
     isWep?: boolean;
+    // isWpa3?: boolean; TODO: to be introduced on iOS
   }): Promise<{ value: ConnectState }>;
 
   securePrefixConnect(options: {
@@ -49,6 +50,7 @@ export interface CapacitorWifiConnectPlugin {
     password: string;
     saveNetwork?: boolean;
     isWep?: boolean;
+    // isWpa3?: boolean; TODO: to be introduced on iOS
   }): Promise<{ value: ConnectState }>;
 }
 
