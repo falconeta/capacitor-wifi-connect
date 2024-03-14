@@ -55,25 +55,18 @@ For functionality, you need to note the following:
 
 <docgen-index>
 
-- [@falconeta/capacitor-wifi-connect](#falconetacapacitor-wifi-connect)
-  - [Install](#install)
-  - [Example usage](#example-usage)
-- [iOS Functions](#ios-functions)
-  - [API](#api)
-    - [checkPermission()](#checkpermission)
-    - [requestPermission()](#requestpermission)
-    - [disconnect()](#disconnect)
-    - [getSSIDs()](#getssids)
-    - [getAppSSID()](#getappssid)
-    - [getDeviceSSID()](#getdevicessid)
-    - [connect(...)](#connect)
-    - [prefixConnect(...)](#prefixconnect)
-    - [secureConnect(...)](#secureconnect)
-    - [securePrefixConnect(...)](#secureprefixconnect)
-    - [Type Aliases](#type-aliases)
-      - [PermissionState](#permissionstate)
-    - [Enums](#enums)
-      - [ConnectState](#connectstate)
+* [`checkPermission()`](#checkpermission)
+* [`requestPermission()`](#requestpermission)
+* [`disconnect()`](#disconnect)
+* [`getSSIDs()`](#getssids)
+* [`getAppSSID()`](#getappssid)
+* [`getDeviceSSID()`](#getdevicessid)
+* [`connect(...)`](#connect)
+* [`prefixConnect(...)`](#prefixconnect)
+* [`secureConnect(...)`](#secureconnect)
+* [`securePrefixConnect(...)`](#secureprefixconnect)
+* [Type Aliases](#type-aliases)
+* [Enums](#enums)
 
 </docgen-index>
 
