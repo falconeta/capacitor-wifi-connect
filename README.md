@@ -9,6 +9,27 @@ npm install @falconeta/capacitor-wifi-connect
 npx cap sync
 ```
 
+## Example usage
+```typescript
+import { CapacitorWifiConnect } from "@falconeta/capacitor-wifi-connect";
+
+  async secureConnect() {
+    let { value } = await CapacitorWifiConnect.checkPermission();
+    if (value === 'prompt') {
+      const data = await CapacitorWifiConnect.requestPermission();
+      value = data.value;
+    }
+    if (value === 'granted') {
+      CapacitorWifiConnect.secureConnect({
+        ssid: 'SSID', 
+        password: 'PWD', 
+      }).then((data) => alert(data.value));
+    } else {
+      throw new Error('permission denied');
+    }
+  }
+```
+
 # iOS Functions
 For functionality, you need to note the following:
 
@@ -20,22 +41,39 @@ For functionality, you need to note the following:
 
 * Will ensure 'HotspotConfiguration' and 'Wifi Information' capabilities are added to your xCode project
 
+* Will ensure that these permission are described in info.plist
+```plist
+  <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+  <string>...</string>
+  <key>NSLocationAlwaysUsageDescription</key>
+  <string>...</string>
+  <key>NSLocationWhenInUseUsageDescription</key>
+  <string>...</string>
+  ```
+
 ## API
 
 <docgen-index>
 
-* [`checkPermission()`](#checkpermission)
-* [`requestPermission()`](#requestpermission)
-* [`disconnect()`](#disconnect)
-* [`getSSIDs()`](#getssids)
-* [`getAppSSID()`](#getappssid)
-* [`getDeviceSSID()`](#getdevicessid)
-* [`connect(...)`](#connect)
-* [`prefixConnect(...)`](#prefixconnect)
-* [`secureConnect(...)`](#secureconnect)
-* [`securePrefixConnect(...)`](#secureprefixconnect)
-* [Type Aliases](#type-aliases)
-* [Enums](#enums)
+- [@falconeta/capacitor-wifi-connect](#falconetacapacitor-wifi-connect)
+  - [Install](#install)
+  - [Example usage](#example-usage)
+- [iOS Functions](#ios-functions)
+  - [API](#api)
+    - [checkPermission()](#checkpermission)
+    - [requestPermission()](#requestpermission)
+    - [disconnect()](#disconnect)
+    - [getSSIDs()](#getssids)
+    - [getAppSSID()](#getappssid)
+    - [getDeviceSSID()](#getdevicessid)
+    - [connect(...)](#connect)
+    - [prefixConnect(...)](#prefixconnect)
+    - [secureConnect(...)](#secureconnect)
+    - [securePrefixConnect(...)](#secureprefixconnect)
+    - [Type Aliases](#type-aliases)
+      - [PermissionState](#permissionstate)
+    - [Enums](#enums)
+      - [ConnectState](#connectstate)
 
 </docgen-index>
 
