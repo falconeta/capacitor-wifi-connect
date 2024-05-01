@@ -223,7 +223,7 @@ public typealias PluginResultData = [String: Any]
             }
             
             let hotspotConfig = NEHotspotConfiguration.init(ssid: ssid, passphrase: password, isWEP: isWep)
-            hotspotConfig.joinOnce = !saveNetwork;
+//            hotspotConfig.joinOnce = !saveNetwork;
             return self.execConnect(hotspotConfig: hotspotConfig, resolve: resolve);
         }
     }
@@ -244,34 +244,40 @@ public typealias PluginResultData = [String: Any]
     }
     
     private func execConnect(hotspotConfig: NEHotspotConfiguration, resolve: @escaping (PluginResultData) -> Void) -> Void {
-        
-        NEHotspotConfigurationManager.shared.apply(hotspotConfig) { [weak self] (error) in
-            if let error = error as NSError? {
-                switch(error.code) {
-                case NEHotspotConfigurationError.alreadyAssociated.rawValue:
-                    resolve(["value": 0]); // success
-                    break
-                case NEHotspotConfigurationError.userDenied.rawValue:
-                    resolve(["value": -1]); // button deny
-                    break
-                default:
-                    resolve(["value": -2]); // no connection
-                    break
-                }
-                return
-            }
-            guard let this = self else {
-                resolve(["value": -3]);
-                return
+    
+        NEHotspotConfigurationManager.shared.getConfiguredSSIDs { (wifiList) in
+            wifiList.forEach {
+                NEHotspotConfigurationManager.shared.removeConfiguration(forSSID: $0)
             }
             
-            if let currentSsid = this._getSSID(), currentSsid.hasPrefix(hotspotConfig.ssid){
-                resolve(["value": 0]);
-                return;
+            NEHotspotConfigurationManager.shared.apply(hotspotConfig) { [weak self] (error) in
+                if let error = error as NSError? {
+                    switch(error.code) {
+                    case NEHotspotConfigurationError.alreadyAssociated.rawValue:
+                        resolve(["value": 0]); // success
+                        break
+                    case NEHotspotConfigurationError.userDenied.rawValue:
+                        resolve(["value": -1]); // button deny
+                        break
+                    default:
+                        resolve(["value": -2]); // no connection
+                        break
+                    }
+                    return
+                }
+                guard let this = self else {
+                    resolve(["value": -3]);
+                    return
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) {
+                    if let currentSsid = self?._getSSID(), currentSsid.hasPrefix(hotspotConfig.ssid){
+                        resolve(["value": 0]);
+                        return;
+                    }
+                    resolve(["value": -2]);
+                }
             }
-            resolve(["value": -4]);
         }
-        
-        
     }
 }
