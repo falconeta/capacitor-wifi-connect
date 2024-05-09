@@ -1,5 +1,11 @@
 # @falconeta/capacitor-wifi-connect
 
+## Do you like the plugin?
+If you can contribute or you want to, feel free to do it at Buy me a coffee! ☕, I will be really thankfull for anything even if it is a coffee or just a kind comment towards my work, because that helps me a lot.
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/falconeta)
+
+## Description
 plugin used for connect the device trhought Wifi also with prefix
 
 ## Install
@@ -79,7 +85,11 @@ For functionality, you need to note the following:
 checkPermission() => Promise<{ value: PermissionState; }>
 ```
 
+method that check if the app has autorization or not to use the location capability.
+
 **Returns:** <code>Promise&lt;{ value: <a href="#permissionstate">PermissionState</a>; }&gt;</code>
+
+**Since:** 1.0.0
 
 --------------------
 
@@ -90,7 +100,11 @@ checkPermission() => Promise<{ value: PermissionState; }>
 requestPermission() => Promise<{ value: PermissionState; }>
 ```
 
+method that request (if the status of authorization is prompt) autorization to use the location capability.
+
 **Returns:** <code>Promise&lt;{ value: <a href="#permissionstate">PermissionState</a>; }&gt;</code>
+
+**Since:** 1.0.0
 
 --------------------
 
@@ -101,7 +115,11 @@ requestPermission() => Promise<{ value: PermissionState; }>
 disconnect() => Promise<{ value: boolean; }>
 ```
 
+method that disconnects from the wifi network if the network was connected to using one of the connect methods.
+
 **Returns:** <code>Promise&lt;{ value: boolean; }&gt;</code>
+
+**Since:** 1.0.0
 
 --------------------
 
@@ -144,7 +162,7 @@ returns the current SSID connected by Application
 getDeviceSSID() => Promise<{ value: string; status: ConnectState; }>
 ```
 
-iOS &gt;= 14, Android &gt;=9: 
+iOS &gt;= 14, Android &gt;=9:
 
 returns the current SSID connected by device
 
@@ -161,11 +179,16 @@ returns the current SSID connected by device
 connect(options: { ssid: string; saveNetwork?: boolean; }) => Promise<{ value: ConnectState; }>
 ```
 
+method attempts to connect to wifi matching explicitly the ssid parameter
+WARNING: saveNetwork is enabled by default on iOS and cannot be disabled due Apple's bug. (https://forums.developer.apple.com/forums/thread/700612)
+
 | Param         | Type                                                  |
 | ------------- | ----------------------------------------------------- |
 | **`options`** | <code>{ ssid: string; saveNetwork?: boolean; }</code> |
 
 **Returns:** <code>Promise&lt;{ value: <a href="#connectstate">ConnectState</a>; }&gt;</code>
+
+**Since:** 1.0.0
 
 --------------------
 
@@ -176,11 +199,16 @@ connect(options: { ssid: string; saveNetwork?: boolean; }) => Promise<{ value: C
 prefixConnect(options: { ssid: string; saveNetwork?: boolean; }) => Promise<{ value: ConnectState; }>
 ```
 
+method attempts to connect to the nearest wifi network with the ssid prefix matching the ssidPrefix parameter.
+WARNING: saveNetwork is enabled by default on iOS and cannot be disabled due Apple's bug. (https://forums.developer.apple.com/forums/thread/700612)
+
 | Param         | Type                                                  |
 | ------------- | ----------------------------------------------------- |
 | **`options`** | <code>{ ssid: string; saveNetwork?: boolean; }</code> |
 
 **Returns:** <code>Promise&lt;{ value: <a href="#connectstate">ConnectState</a>; }&gt;</code>
+
+**Since:** 1.0.0
 
 --------------------
 
@@ -191,11 +219,18 @@ prefixConnect(options: { ssid: string; saveNetwork?: boolean; }) => Promise<{ va
 secureConnect(options: { ssid: string; password: string; saveNetwork?: boolean; isWep?: boolean; }) => Promise<{ value: ConnectState; }>
 ```
 
+method attempts to connect to wifi matching explicitly the ssid parameter.
+This will fail if the password doesn't match or the isWep parameter isn't set correctly.
+Android does not support WEP Networks.
+WARNING: saveNetwork is enabled by default on iOS and cannot be disabled due Apple's bug. (https://forums.developer.apple.com/forums/thread/700612)
+
 | Param         | Type                                                                                     |
 | ------------- | ---------------------------------------------------------------------------------------- |
 | **`options`** | <code>{ ssid: string; password: string; saveNetwork?: boolean; isWep?: boolean; }</code> |
 
 **Returns:** <code>Promise&lt;{ value: <a href="#connectstate">ConnectState</a>; }&gt;</code>
+
+**Since:** 1.0.0
 
 --------------------
 
@@ -206,11 +241,19 @@ secureConnect(options: { ssid: string; password: string; saveNetwork?: boolean; 
 securePrefixConnect(options: { ssid: string; password: string; saveNetwork?: boolean; isWep?: boolean; }) => Promise<{ value: ConnectState; }>
 ```
 
+method attempts to connect to the nearest
+wifi network with the ssid prefix matching the ssidPrefix parameter.
+This will fail if the password doesn't match or the isWep parameter
+isn't set correctly. Android does not support WEP Networks.
+WARNING: saveNetwork is enabled by default on iOS and cannot be disabled due Apple's bug. (https://forums.developer.apple.com/forums/thread/700612)
+
 | Param         | Type                                                                                     |
 | ------------- | ---------------------------------------------------------------------------------------- |
 | **`options`** | <code>{ ssid: string; password: string; saveNetwork?: boolean; isWep?: boolean; }</code> |
 
 **Returns:** <code>Promise&lt;{ value: <a href="#connectstate">ConnectState</a>; }&gt;</code>
+
+**Since:** 1.0.0
 
 --------------------
 
