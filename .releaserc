@@ -21,6 +21,6 @@
     "@semantic-release/git"
   ],
   "branches": [
-    "master"
+    "main"
   ]
 }
