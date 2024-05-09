@@ -190,7 +190,7 @@ public typealias PluginResultData = [String: Any]
         
         runLocationBlock {
             let hotspotConfig = NEHotspotConfiguration.init(ssid: ssid)
-            hotspotConfig.joinOnce = !saveNetwork;
+            // hotspotConfig.joinOnce = !saveNetwork;
             return self.execConnect(hotspotConfig: hotspotConfig, resolve: resolve);
         }
     }
@@ -207,7 +207,7 @@ public typealias PluginResultData = [String: Any]
         
         self.runLocationBlock {
             let hotspotConfig = NEHotspotConfiguration.init(ssidPrefix: ssid)
-            hotspotConfig.joinOnce = !saveNetwork;
+            // hotspotConfig.joinOnce = !saveNetwork;
             return self.execConnect(hotspotConfig: hotspotConfig, resolve: resolve);
         }
         
@@ -223,7 +223,7 @@ public typealias PluginResultData = [String: Any]
             }
             
             let hotspotConfig = NEHotspotConfiguration.init(ssid: ssid, passphrase: password, isWEP: isWep)
-//            hotspotConfig.joinOnce = !saveNetwork;
+            // hotspotConfig.joinOnce = !saveNetwork;
             return self.execConnect(hotspotConfig: hotspotConfig, resolve: resolve);
         }
     }
@@ -238,7 +238,7 @@ public typealias PluginResultData = [String: Any]
         
         runLocationBlock {
             let hotspotConfig = NEHotspotConfiguration.init(ssidPrefix: ssid, passphrase: password, isWEP: isWep)
-            hotspotConfig.joinOnce = !saveNetwork;
+            // hotspotConfig.joinOnce = !saveNetwork;
             return self.execConnect(hotspotConfig: hotspotConfig, resolve: resolve);
         }
     }
