@@ -66,27 +66,18 @@ For functionality, you need to note the following:
 
 <docgen-index>
 
-- [@falconeta/capacitor-wifi-connect](#falconetacapacitor-wifi-connect)
-  - [Do you like the plugin?](#do-you-like-the-plugin)
-  - [Description](#description)
-  - [Install](#install)
-  - [Example usage](#example-usage)
-- [iOS Functions](#ios-functions)
-  - [API](#api)
-    - [checkPermission()](#checkpermission)
-    - [requestPermission()](#requestpermission)
-    - [disconnect()](#disconnect)
-    - [getSSIDs()](#getssids)
-    - [getAppSSID()](#getappssid)
-    - [getDeviceSSID()](#getdevicessid)
-    - [connect(...)](#connect)
-    - [prefixConnect(...)](#prefixconnect)
-    - [secureConnect(...)](#secureconnect)
-    - [securePrefixConnect(...)](#secureprefixconnect)
-    - [Type Aliases](#type-aliases)
-      - [PermissionState](#permissionstate)
-    - [Enums](#enums)
-      - [ConnectState](#connectstate)
+* [`checkPermission()`](#checkpermission)
+* [`requestPermission()`](#requestpermission)
+* [`disconnect()`](#disconnect)
+* [`getSSIDs()`](#getssids)
+* [`getAppSSID()`](#getappssid)
+* [`getDeviceSSID()`](#getdevicessid)
+* [`connect(...)`](#connect)
+* [`prefixConnect(...)`](#prefixconnect)
+* [`secureConnect(...)`](#secureconnect)
+* [`securePrefixConnect(...)`](#secureprefixconnect)
+* [Type Aliases](#type-aliases)
+* [Enums](#enums)
 
 </docgen-index>
 
@@ -105,7 +96,8 @@ method that check if the app has autorization or not to use the location capabil
 
 **Since:** 1.0.0
 
----
+--------------------
+
 
 ### requestPermission()
 
@@ -119,7 +111,8 @@ method that request (if the status of authorization is prompt) autorization to u
 
 **Since:** 1.0.0
 
----
+--------------------
+
 
 ### disconnect()
 
@@ -133,7 +126,8 @@ method that disconnects from the wifi network if the network was connected to us
 
 **Since:** 1.0.0
 
----
+--------------------
+
 
 ### getSSIDs()
 
@@ -142,14 +136,15 @@ getSSIDs() => Promise<{ value: string[]; status: ConnectState; }>
 ```
 
 ONLY ANDROID
-returns a list of SSIDs discovered by device
+returns the current SSID connected by Application
 WARNING: app is restricted to 4 scans every 2 minutes
 
 **Returns:** <code>Promise&lt;{ value: string[]; status: <a href="#connectstate">ConnectState</a>; }&gt;</code>
 
 **Since:** 5.1.0
 
----
+--------------------
+
 
 ### getAppSSID()
 
@@ -163,7 +158,8 @@ returns the current SSID connected by Application
 
 **Since:** 5.1.0
 
----
+--------------------
+
 
 ### getDeviceSSID()
 
@@ -179,7 +175,8 @@ returns the current SSID connected by device
 
 **Since:** 5.1.0
 
----
+--------------------
+
 
 ### connect(...)
 
@@ -198,7 +195,8 @@ WARNING: saveNetwork is enabled by default on iOS and cannot be disabled due App
 
 **Since:** 1.0.0
 
----
+--------------------
+
 
 ### prefixConnect(...)
 
@@ -217,7 +215,8 @@ WARNING: saveNetwork is enabled by default on iOS and cannot be disabled due App
 
 **Since:** 1.0.0
 
----
+--------------------
+
 
 ### secureConnect(...)
 
@@ -238,7 +237,8 @@ WARNING: saveNetwork is enabled by default on iOS and cannot be disabled due App
 
 **Since:** 1.0.0
 
----
+--------------------
+
 
 ### securePrefixConnect(...)
 
@@ -260,15 +260,19 @@ WARNING: saveNetwork is enabled by default on iOS and cannot be disabled due App
 
 **Since:** 1.0.0
 
----
+--------------------
+
 
 ### Type Aliases
+
 
 #### PermissionState
 
 <code>'prompt' | 'prompt-with-rationale' | 'granted' | 'denied'</code>
 
+
 ### Enums
+
 
 #### ConnectState
 
