@@ -9,7 +9,7 @@ import com.getcapacitor.annotation.PermissionCallback
 
 
 private const val PERMISSION_ACCESS_FINE_LOCATION = "access-fine-location";
-private const val PERMISSION_ACCESS_COARSE_LOCATION = "access-coarse-location";
+private const val PERMISSION_NEARBY_WIFI_DEVICES = "nearby-wifi-devices";
 private const val PERMISSION_ACCESS_WIFI_STATE = "access-wifi-state";
 private const val PERMISSION_CHANGE_WIFI_STATE = "change-wifi-state";
 private const val PERMISSION_ACCESS_NETWORK_STATE = "access-network-state";
@@ -24,8 +24,8 @@ private const val PERMISSION_CHANGE_NETWORK_STATE = "change-network-state";
       strings = [Manifest.permission.ACCESS_FINE_LOCATION]
     ),
     Permission(
-      alias = PERMISSION_ACCESS_COARSE_LOCATION,
-      strings = [Manifest.permission.ACCESS_COARSE_LOCATION]
+      alias = PERMISSION_NEARBY_WIFI_DEVICES,
+      strings = ["android.permission.NEARBY_WIFI_DEVICES"]
     ),
     Permission(
       alias = PERMISSION_ACCESS_WIFI_STATE,
@@ -301,20 +301,24 @@ class CapacitorWifiConnectPlugin : Plugin() {
   }
 
   private fun checkPermission(call: PluginCall, callbackName: String) {
-    if (getPermissionState(PERMISSION_ACCESS_FINE_LOCATION) != PermissionState.GRANTED) {
-      return requestPermissionForAlias(
-        PERMISSION_ACCESS_FINE_LOCATION,
-        call,
-        callbackName
-      );
-    }
-
-    if (getPermissionState(PERMISSION_ACCESS_COARSE_LOCATION) != PermissionState.GRANTED) {
-      return requestPermissionForAlias(
-        PERMISSION_ACCESS_COARSE_LOCATION,
-        call,
-        callbackName
-      );
+    // For Android 13+, check NEARBY_WIFI_DEVICES instead of location permission
+    // For Android < 13, check ACCESS_FINE_LOCATION
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      if (getPermissionState(PERMISSION_NEARBY_WIFI_DEVICES) != PermissionState.GRANTED) {
+        return requestPermissionForAlias(
+          PERMISSION_NEARBY_WIFI_DEVICES,
+          call,
+          callbackName
+        );
+      }
+    } else {
+      if (getPermissionState(PERMISSION_ACCESS_FINE_LOCATION) != PermissionState.GRANTED) {
+        return requestPermissionForAlias(
+          PERMISSION_ACCESS_FINE_LOCATION,
+          call,
+          callbackName
+        );
+      }
     }
 
     if (getPermissionState(PERMISSION_ACCESS_WIFI_STATE) != PermissionState.GRANTED) {
@@ -352,7 +356,13 @@ class CapacitorWifiConnectPlugin : Plugin() {
   }
 
   private fun isPermissionGranted(): Boolean {
-    return getPermissionState(PERMISSION_ACCESS_FINE_LOCATION) == PermissionState.GRANTED &&
+    val locationOrWifiPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      getPermissionState(PERMISSION_NEARBY_WIFI_DEVICES) == PermissionState.GRANTED
+    } else {
+      getPermissionState(PERMISSION_ACCESS_FINE_LOCATION) == PermissionState.GRANTED
+    }
+
+    return locationOrWifiPermission &&
       getPermissionState(PERMISSION_ACCESS_WIFI_STATE) == PermissionState.GRANTED &&
       getPermissionState(PERMISSION_CHANGE_WIFI_STATE) == PermissionState.GRANTED &&
       getPermissionState(PERMISSION_ACCESS_NETWORK_STATE) == PermissionState.GRANTED &&
@@ -360,7 +370,13 @@ class CapacitorWifiConnectPlugin : Plugin() {
   }
 
   private fun isPermissionPrompt(): Boolean {
-    return getPermissionState(PERMISSION_ACCESS_FINE_LOCATION) == PermissionState.PROMPT ||
+    val locationOrWifiPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      getPermissionState(PERMISSION_NEARBY_WIFI_DEVICES) == PermissionState.PROMPT
+    } else {
+      getPermissionState(PERMISSION_ACCESS_FINE_LOCATION) == PermissionState.PROMPT
+    }
+
+    return locationOrWifiPermission ||
       getPermissionState(PERMISSION_ACCESS_WIFI_STATE) == PermissionState.PROMPT ||
       getPermissionState(PERMISSION_CHANGE_WIFI_STATE) == PermissionState.PROMPT ||
       getPermissionState(PERMISSION_ACCESS_NETWORK_STATE) == PermissionState.PROMPT ||
