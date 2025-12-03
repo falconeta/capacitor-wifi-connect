@@ -3,8 +3,11 @@
   <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES"
     android:usesPermissionFlags="neverForLocation" />
 
-  <!-- For Android 10-12: Location permission is required for WiFi APIs -->
+  <!-- For Android 10-12: Location permissions are required for WiFi APIs -->
   <!-- For Android < 10: Required for WiFi scanning operations -->
+  <!-- Note: Both COARSE and FINE are required together on Android 12+ -->
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"
+    android:maxSdkVersion="32" />
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"
     android:maxSdkVersion="32" />
 
