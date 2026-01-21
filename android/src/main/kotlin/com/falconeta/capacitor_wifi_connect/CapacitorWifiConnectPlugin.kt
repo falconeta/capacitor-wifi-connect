@@ -10,6 +10,7 @@ import com.getcapacitor.annotation.PermissionCallback
 
 private const val PERMISSION_ACCESS_FINE_LOCATION = "access-fine-location";
 private const val PERMISSION_ACCESS_COARSE_LOCATION = "access-coarse-location";
+private const val PERMISSION_NEARBY_WIFI_DEVICES = "nearby-wifi-devices";
 private const val PERMISSION_ACCESS_WIFI_STATE = "access-wifi-state";
 private const val PERMISSION_CHANGE_WIFI_STATE = "change-wifi-state";
 private const val PERMISSION_ACCESS_NETWORK_STATE = "access-network-state";
@@ -26,6 +27,10 @@ private const val PERMISSION_CHANGE_NETWORK_STATE = "change-network-state";
     Permission(
       alias = PERMISSION_ACCESS_COARSE_LOCATION,
       strings = [Manifest.permission.ACCESS_COARSE_LOCATION]
+    ),
+    Permission(
+      alias = PERMISSION_NEARBY_WIFI_DEVICES,
+      strings = ["android.permission.NEARBY_WIFI_DEVICES"]
     ),
     Permission(
       alias = PERMISSION_ACCESS_WIFI_STATE,
@@ -115,8 +120,9 @@ class CapacitorWifiConnectPlugin : Plugin() {
 
   @PluginMethod
   fun getAppSSID(call: PluginCall) {
-    if (!isPermissionGranted()) {
-      checkPermission(call, "getAppSSIDCallback");
+    // Reading SSID requires location permissions on ALL Android versions
+    if (!isScanPermissionGranted()) {
+      checkScanPermission(call, "getAppSSIDCallback");
       return;
     }
     val ret = JSObject()
@@ -127,8 +133,9 @@ class CapacitorWifiConnectPlugin : Plugin() {
 
   @PluginMethod
   fun getDeviceSSID(call: PluginCall) {
-    if (!isPermissionGranted()) {
-      checkPermission(call, "getDeviceSSIDCallback");
+    // Reading SSID requires location permissions on ALL Android versions
+    if (!isScanPermissionGranted()) {
+      checkScanPermission(call, "getDeviceSSIDCallback");
       return;
     }
     val ret = JSObject()
@@ -139,7 +146,7 @@ class CapacitorWifiConnectPlugin : Plugin() {
 
   @PermissionCallback
   private fun getAppSSIDCallback(call: PluginCall) {
-    if (isPermissionGranted()) {
+    if (isScanPermissionGranted()) {
       getAppSSID(call);
     } else {
       val ret = JSObject()
@@ -151,7 +158,7 @@ class CapacitorWifiConnectPlugin : Plugin() {
 
   @PermissionCallback
   private fun getDeviceSSIDCallback(call: PluginCall) {
-    if (isPermissionGranted()) {
+    if (isScanPermissionGranted()) {
       getDeviceSSID(call);
     } else {
       val ret = JSObject()
@@ -248,8 +255,9 @@ class CapacitorWifiConnectPlugin : Plugin() {
 
   @PluginMethod
   fun getSSIDs(call: PluginCall) {
-    if (!isPermissionGranted()) {
-      checkPermission(call, "getSSIDsPermsCallback");
+    // getSSIDs uses WiFi scanning which requires location permissions on ALL Android versions
+    if (!isScanPermissionGranted()) {
+      checkScanPermission(call, "getSSIDsPermsCallback");
       return;
     }
 
@@ -263,7 +271,7 @@ class CapacitorWifiConnectPlugin : Plugin() {
 
   @PermissionCallback
   private fun getSSIDsPermsCallback(call: PluginCall) {
-    if (isPermissionGranted()) {
+    if (isScanPermissionGranted()) {
       getSSIDs(call);
     } else {
       val ret = JSObject()
@@ -300,7 +308,45 @@ class CapacitorWifiConnectPlugin : Plugin() {
     }
   }
 
+  // Permission check for connect operations (connect, secureConnect, prefixConnect, securePrefixConnect)
+  // On Android 13+, only NEARBY_WIFI_DEVICES is needed
+  // On Android < 13, location permissions are needed
   private fun checkPermission(call: PluginCall, callbackName: String) {
+    // For Android 13+, check NEARBY_WIFI_DEVICES instead of location permissions
+    // For Android < 13, check ACCESS_FINE_LOCATION and ACCESS_COARSE_LOCATION
+    // Note: Android 12+ requires both FINE and COARSE location permissions
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      if (getPermissionState(PERMISSION_NEARBY_WIFI_DEVICES) != PermissionState.GRANTED) {
+        return requestPermissionForAlias(
+          PERMISSION_NEARBY_WIFI_DEVICES,
+          call,
+          callbackName
+        );
+      }
+    } else {
+      if (getPermissionState(PERMISSION_ACCESS_FINE_LOCATION) != PermissionState.GRANTED) {
+        return requestPermissionForAlias(
+          PERMISSION_ACCESS_FINE_LOCATION,
+          call,
+          callbackName
+        );
+      }
+      if (getPermissionState(PERMISSION_ACCESS_COARSE_LOCATION) != PermissionState.GRANTED) {
+        return requestPermissionForAlias(
+          PERMISSION_ACCESS_COARSE_LOCATION,
+          call,
+          callbackName
+        );
+      }
+    }
+
+    checkWifiPermissions(call, callbackName)
+  }
+
+  // Permission check for scan operations (getSSIDs)
+  // Location permissions are ALWAYS required for WiFi scanning, even on Android 13+
+  private fun checkScanPermission(call: PluginCall, callbackName: String) {
+    // WiFi scanning (startScan, getScanResults) requires location permissions on ALL Android versions
     if (getPermissionState(PERMISSION_ACCESS_FINE_LOCATION) != PermissionState.GRANTED) {
       return requestPermissionForAlias(
         PERMISSION_ACCESS_FINE_LOCATION,
@@ -308,7 +354,6 @@ class CapacitorWifiConnectPlugin : Plugin() {
         callbackName
       );
     }
-
     if (getPermissionState(PERMISSION_ACCESS_COARSE_LOCATION) != PermissionState.GRANTED) {
       return requestPermissionForAlias(
         PERMISSION_ACCESS_COARSE_LOCATION,
@@ -317,6 +362,11 @@ class CapacitorWifiConnectPlugin : Plugin() {
       );
     }
 
+    checkWifiPermissions(call, callbackName)
+  }
+
+  // Check WiFi-related permissions (used by both connect and scan operations)
+  private fun checkWifiPermissions(call: PluginCall, callbackName: String) {
     if (getPermissionState(PERMISSION_ACCESS_WIFI_STATE) != PermissionState.GRANTED) {
       return requestPermissionForAlias(
         PERMISSION_ACCESS_WIFI_STATE,
@@ -348,11 +398,30 @@ class CapacitorWifiConnectPlugin : Plugin() {
         callbackName
       );
     }
-
   }
 
+  // Check if permissions for connect operations are granted
   private fun isPermissionGranted(): Boolean {
+    val locationOrWifiPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      getPermissionState(PERMISSION_NEARBY_WIFI_DEVICES) == PermissionState.GRANTED
+    } else {
+      // Android 12+ requires both FINE and COARSE location permissions
+      getPermissionState(PERMISSION_ACCESS_FINE_LOCATION) == PermissionState.GRANTED &&
+      getPermissionState(PERMISSION_ACCESS_COARSE_LOCATION) == PermissionState.GRANTED
+    }
+
+    return locationOrWifiPermission &&
+      getPermissionState(PERMISSION_ACCESS_WIFI_STATE) == PermissionState.GRANTED &&
+      getPermissionState(PERMISSION_CHANGE_WIFI_STATE) == PermissionState.GRANTED &&
+      getPermissionState(PERMISSION_ACCESS_NETWORK_STATE) == PermissionState.GRANTED &&
+      getPermissionState(PERMISSION_CHANGE_NETWORK_STATE) == PermissionState.GRANTED;
+  }
+
+  // Check if permissions for scan operations are granted (location always required)
+  private fun isScanPermissionGranted(): Boolean {
+    // WiFi scanning requires location permissions on ALL Android versions, including 13+
     return getPermissionState(PERMISSION_ACCESS_FINE_LOCATION) == PermissionState.GRANTED &&
+      getPermissionState(PERMISSION_ACCESS_COARSE_LOCATION) == PermissionState.GRANTED &&
       getPermissionState(PERMISSION_ACCESS_WIFI_STATE) == PermissionState.GRANTED &&
       getPermissionState(PERMISSION_CHANGE_WIFI_STATE) == PermissionState.GRANTED &&
       getPermissionState(PERMISSION_ACCESS_NETWORK_STATE) == PermissionState.GRANTED &&
@@ -360,7 +429,14 @@ class CapacitorWifiConnectPlugin : Plugin() {
   }
 
   private fun isPermissionPrompt(): Boolean {
-    return getPermissionState(PERMISSION_ACCESS_FINE_LOCATION) == PermissionState.PROMPT ||
+    val locationOrWifiPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      getPermissionState(PERMISSION_NEARBY_WIFI_DEVICES) == PermissionState.PROMPT
+    } else {
+      getPermissionState(PERMISSION_ACCESS_FINE_LOCATION) == PermissionState.PROMPT ||
+      getPermissionState(PERMISSION_ACCESS_COARSE_LOCATION) == PermissionState.PROMPT
+    }
+
+    return locationOrWifiPermission ||
       getPermissionState(PERMISSION_ACCESS_WIFI_STATE) == PermissionState.PROMPT ||
       getPermissionState(PERMISSION_CHANGE_WIFI_STATE) == PermissionState.PROMPT ||
       getPermissionState(PERMISSION_ACCESS_NETWORK_STATE) == PermissionState.PROMPT ||
