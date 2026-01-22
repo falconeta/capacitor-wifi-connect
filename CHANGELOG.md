@@ -1,3 +1,10 @@
+## [7.0.2](https://github.com/falconeta/capacitor-wifi-connect/compare/v7.0.1...v7.0.2) (2026-01-22)
+
+
+### Bug Fixes
+
+* SSID trim on deprecated execConnect wifi change listener ([#40](https://github.com/falconeta/capacitor-wifi-connect/issues/40)) ([df1286c](https://github.com/falconeta/capacitor-wifi-connect/commit/df1286ce91357a67efda6e8ad2a0a6da27c20e77))
+
 ## [7.0.1](https://github.com/falconeta/capacitor-wifi-connect/compare/v7.0.0...v7.0.1) (2026-01-22)
 
 
