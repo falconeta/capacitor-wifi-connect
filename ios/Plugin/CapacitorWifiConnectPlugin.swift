@@ -6,7 +6,21 @@ import Capacitor
  * here: https://capacitorjs.com/docs/plugins/ios
  */
 @objc(CapacitorWifiConnectPlugin)
-public class CapacitorWifiConnectPlugin: CAPPlugin {
+public class CapacitorWifiConnectPlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "CapacitorWifiConnect"
+    public let jsName = "CapacitorWifiConnect"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "checkPermission", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "requestPermission", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "disconnect", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getAppSSID", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getDeviceSSID", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "connect", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "prefixConnect", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "secureConnect", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "securePrefixConnect", returnType: CAPPluginReturnPromise),
+    ]
+
     private let implementation = CapacitorWifiConnect()
 
     @objc func checkPermission(_ call: CAPPluginCall) {
