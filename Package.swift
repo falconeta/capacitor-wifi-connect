@@ -2,13 +2,13 @@
 import PackageDescription
 
 let package = Package(
-    name: "CapacitorWifiConnect",
+    name: "FalconetaCapacitorWifiConnect",
     platforms: [
         .iOS(.v15),
     ],
     products: [
         .library(
-            name: "Plugin",
+            name: "FalconetaCapacitorWifiConnect",
             targets: ["Plugin"]
         ),
     ],
@@ -23,15 +23,13 @@ let package = Package(
                 .product(name: "Cordova", package: "capacitor-swift-pm"),
             ],
             path: "ios/Plugin",
-            exclude: [
-                "CapacitorWifiConnectPlugin.h",
-                "CapacitorWifiConnectPlugin.m",
-            ]
+            exclude: ["Info.plist"]
         ),
         .testTarget(
             name: "PluginTests",
             dependencies: ["Plugin"],
-            path: "ios/PluginTests"
+            path: "ios/PluginTests",
+            exclude: ["Info.plist"]
         ),
     ]
 )
