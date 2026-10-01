@@ -1,3 +1,10 @@
+## [8.0.1](https://github.com/falconeta/capacitor-wifi-connect/compare/v8.0.0...v8.0.1) (2026-10-01)
+
+
+### Bug Fixes
+
+* name SPM package and product after the podspec ([#43](https://github.com/falconeta/capacitor-wifi-connect/issues/43)) ([368172a](https://github.com/falconeta/capacitor-wifi-connect/commit/368172a3e92e7736720102b1a8bd64399aa66e73))
+
 ## [7.0.2](https://github.com/falconeta/capacitor-wifi-connect/compare/v7.0.1...v7.0.2) (2026-01-22)
 
 
