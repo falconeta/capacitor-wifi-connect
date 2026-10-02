@@ -56,12 +56,16 @@ class CapacitorWifiConnect(context: Context) : LifecycleObserver {
     call: PluginCall
   ) {
 
-    val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-    if (!networkEnabled) {
-      val ret = JSObject()
-      ret.put("value", -6)
-      call.resolve(ret)
-      return
+    // For Android Q+ the disconnect only releases the network request, location services don't need to be enabled.
+    // Returning early there would leave the process bound to the network.
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+      val networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+      if (!networkEnabled) {
+        val ret = JSObject()
+        ret.put("value", -6)
+        call.resolve(ret)
+        return
+      }
     }
 
     when {
